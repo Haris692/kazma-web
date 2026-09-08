@@ -23,7 +23,7 @@ a{color:inherit;text-decoration:none}
 h1,h2,h3{margin:0;font-weight:700;letter-spacing:-.02em}
 
 /* ---------- ossature ---------- */
-.app{display:grid;grid-template-columns:246px 1fr;min-height:100vh}
+.app{display:grid;grid-template-columns:246px minmax(0,1fr);min-height:100vh}
 .side{background:var(--fond-2);border-right:1px solid var(--bord);
       display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
 .marque{display:flex;align-items:center;gap:11px;padding:20px 18px 16px}
@@ -42,7 +42,9 @@ h1,h2,h3{margin:0;font-weight:700;letter-spacing:-.02em}
 .side-bas{margin-top:auto;padding:14px 16px;border-top:1px solid var(--bord);
           font-size:11px;color:var(--texte-3);line-height:1.6}
 
-.main{padding:26px 30px 60px;max-width:1400px}
+.main{padding:26px 30px 60px;max-width:1400px;min-width:0}
+/* min-width:0 : sans lui, un tableau large etire toute la colonne de la grille
+   et la page deborde lateralement sur mobile. */
 .entete{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;
         flex-wrap:wrap;margin-bottom:20px}
 .entete h1{font-size:29px}
@@ -183,7 +185,7 @@ td .nu{color:var(--texte-3);font-variant-numeric:tabular-nums;min-width:22px}
 .voile{display:none}
 
 @media(max-width:900px){
-  .topbar{display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:40;
+  .topbar{display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:60;
           background:var(--fond-2);border-bottom:1px solid var(--bord);padding:10px 14px}
   .topbar img{width:30px;height:30px;object-fit:contain;border-radius:6px;background:#fff;padding:2px}
   .topbar b{font-size:15px;letter-spacing:-.02em;flex:1}
@@ -195,9 +197,11 @@ td .nu{color:var(--texte-3);font-variant-numeric:tabular-nums;min-width:22px}
           padding:0 8px;cursor:pointer}
   .burger span{display:block;height:2px;background:var(--texte-2);border-radius:2px}
 
-  .app{grid-template-columns:1fr}
+  .app{grid-template-columns:minmax(0,1fr)}
+  /* le panneau glisse SOUS la barre du haut : le bouton menu reste atteignable
+     pour refermer, et le voile aussi. */
   .side{position:fixed;top:0;bottom:0;left:0;width:264px;z-index:50;height:100vh;
-        transform:translateX(-100%);transition:transform .22s ease;
+        padding-top:56px;transform:translateX(-100%);transition:transform .22s ease;
         box-shadow:0 0 40px rgba(0,0,0,.55)}
   html[dir="rtl"] .side{left:auto;right:0;transform:translateX(100%)}
   body.menu .side{transform:translateX(0)}
