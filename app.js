@@ -211,6 +211,7 @@ function nav() {
   Array.prototype.forEach.call(document.querySelectorAll(".lang b"), function (b) {
     b.classList.toggle("on", b.dataset.l === LANG);
   });
+  document.body.classList.remove("menu");     /* toute navigation referme le menu */
 }
 
 /* ---------------------------------------------------------------- vues */
@@ -481,6 +482,10 @@ document.addEventListener("click", function (e) {
   LANG = b.dataset.l;
   localStorage.setItem("kz-lang", LANG);
   rendre();
+});
+document.addEventListener("click", function (e) {
+  if (e.target.closest && e.target.closest("#burger")) document.body.classList.toggle("menu");
+  else if (e.target.id === "voile") document.body.classList.remove("menu");
 });
 window.addEventListener("hashchange", rendre);
 
