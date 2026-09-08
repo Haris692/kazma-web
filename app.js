@@ -109,7 +109,57 @@ var T = {
   p_defense:   { fr: "Défenseur",   en: "Defender",   ar: "مدافع" },
   p_milieu:    { fr: "Milieu",      en: "Midfielder", ar: "لاعب وسط" },
   p_ailier:    { fr: "Ailier",      en: "Winger",     ar: "جناح" },
-  p_attaquant: { fr: "Attaquant",   en: "Forward",    ar: "مهاجم" }
+  p_attaquant: { fr: "Attaquant",   en: "Forward",    ar: "مهاجم" },
+
+  /* --- explications des colonnes, au survol de l'en-tete --- */
+  triAide:    { fr: "Cliquez sur un titre de colonne pour trier",
+                en: "Click a column heading to sort",
+                ar: "اضغط على عنوان العمود للترتيب" },
+  e_numero:   { fr: "Numéro de maillot. Cliquez sur une ligne pour ouvrir la fiche du joueur.",
+                en: "Shirt number. Click a row to open the player page.",
+                ar: "رقم القميص. اضغط على السطر لفتح صفحة اللاعب." },
+  e_joueur:   { fr: "Nom du joueur tel que le fournisseur l’écrit.",
+                en: "Player name as the provider writes it.",
+                ar: "اسم اللاعب كما يكتبه مزوّد البيانات." },
+  e_actions:  { fr: "Toutes les actions relevées par le fournisseur : passes, duels, tirs, récupérations, pertes. C’est un volume de participation, pas une note.",
+                en: "Every action recorded by the provider: passes, duels, shots, recoveries, losses. A volume of involvement, not a rating.",
+                ar: "كل الأحداث التي سجّلها المزوّد: تمريرات، التحامات، تسديدات، استخلاصات، خسارات. حجم مشاركة، وليس تقييمًا." },
+  e_passes:   { fr: "Passes tentées, réussies et ratées confondues.",
+                en: "Passes attempted, completed and failed together.",
+                ar: "التمريرات المحاولة، الناجحة والخاطئة معًا." },
+  e_passesok: { fr: "Passes réussies, c’est-à-dire reçues par un partenaire.",
+                en: "Completed passes — those that reached a team-mate.",
+                ar: "التمريرات الناجحة التي وصلت إلى زميل." },
+  e_prog:     { fr: "Passes progressives réussies : celles qui font nettement avancer le ballon vers le but adverse.",
+                en: "Completed progressive passes: those that move the ball clearly towards the opposing goal.",
+                ar: "التمريرات التقدمية الناجحة: التي تنقل الكرة بوضوح نحو مرمى الخصم." },
+  e_cles:     { fr: "Passes clés : la passe qui amène directement un tir.",
+                en: "Key passes: the pass that directly leads to a shot.",
+                ar: "التمريرات المفتاحية: التمريرة التي تؤدي مباشرة إلى تسديدة." },
+  e_t3:       { fr: "Actions dans le dernier tiers, les 35 derniers mètres avant le but adverse.",
+                en: "Actions in the final third, the last 35 metres before the opposing goal.",
+                ar: "الأحداث في الثلث الأخير، آخر 35 مترًا قبل مرمى الخصم." },
+  e_drib:     { fr: "Dribbles réussis, c’est-à-dire l’adversaire éliminé balle au pied.",
+                en: "Successful dribbles — the opponent beaten with the ball.",
+                ar: "المراوغات الناجحة التي تخطّى فيها الخصم بالكرة." },
+  e_duels:    { fr: "Duels gagnés. Attention : le total du fournisseur contient déjà les duels aériens, les tacles et les dribbles réussis.",
+                en: "Duels won. Note: the provider’s total already includes aerial duels, tackles and successful dribbles.",
+                ar: "الالتحامات المكسوبة. ملاحظة: مجموع المزوّد يشمل أصلًا الكرات الهوائية والعرقلات والمراوغات الناجحة." },
+  e_recup:    { fr: "Ballons récupérés à l’adversaire.",
+                en: "Balls won back from the opponent.",
+                ar: "الكرات المستخلصة من الخصم." },
+  e_pertes:   { fr: "Ballons perdus. Ici, moins il y en a, mieux c’est — un joueur qui touche beaucoup de ballons en perd forcément quelques-uns.",
+                en: "Balls lost. Fewer is better here — a player who touches the ball a lot will inevitably lose some.",
+                ar: "الكرات المفقودة. هنا الأقل أفضل — من يلمس الكرة كثيرًا يفقد بعضها حتمًا." },
+  e_tirs:     { fr: "Tirs tentés, cadrés ou non.",
+                en: "Shots attempted, on target or not.",
+                ar: "التسديدات المحاولة، على المرمى أو خارجه." },
+  e_buts:     { fr: "Buts marqués.",
+                en: "Goals scored.",
+                ar: "الأهداف المسجلة." },
+  e_reussite: { fr: "Part des passes réussies. À lire avec le volume : 100 % sur trois passes ne veut rien dire.",
+                en: "Share of completed passes. Read it with the volume: 100 % on three passes means nothing.",
+                ar: "نسبة التمريرات الناجحة. اقرأها مع الحجم: 100 ٪ من ثلاث تمريرات لا تعني شيئًا." }
 };
 
 function t(k) { var e = T[k]; return e ? (e[LANG] || e.fr) : k; }
@@ -291,31 +341,143 @@ function vueSaison() {
       }).join("") + '</div></div>';
 
   h += '<div class="carte"><h2>' + t("lesJoueurs") + '</h2><div class="lg">' + t("cumul") + '</div>'
-    + tableauJoueurs(IDX.joueurs) + '</div>';
+    + tableauJoueurs(IDX.joueurs, 'saison') + '</div>';
   return h;
 }
 
-function tableauJoueurs(joueurs) {
-  var cols = [["actions", "Act"], ["passes", "Pass"], ["passes_ok", "✓"], ["prog", "Prog"],
-              ["cles", "Clés"], ["t3", "Tiers"], ["dribbles", "Drib"], ["duels_ok", "Duels"],
-              ["recup", "Récup"], ["pertes", "Pertes"], ["tirs", "Tirs"], ["buts", "Buts"]];
-  return '<div class="tw"><table><thead><tr><th class="g"></th><th class="g">' + t("joueur") + '</th>'
-    + cols.map(function (c) { return "<th>" + c[1] + "</th>"; }).join("")
-    + '<th>' + t("reussite") + '</th></tr></thead><tbody>'
-    + joueurs.map(function (j) {
+/* -------------------------------------------- tableau des joueurs, triable
+   Le tri est garde par tableau (saison, tous, match) et survit au re-rendu.
+   Chaque en-tete porte la cle d'une explication : le fournisseur emploie des
+   mots qui ne veulent pas dire la meme chose pour tout le monde, « duels
+   gagnes » en tete, qui contient deja les tacles et les dribbles. */
+var COLS = [
+  { c: "actions",   h: "Act",   a: "e_actions" },
+  { c: "passes",    h: "Pass",  a: "e_passes" },
+  { c: "passes_ok", h: "✓",     a: "e_passesok" },
+  { c: "prog",      h: "Prog",  a: "e_prog" },
+  { c: "cles",      h: "Clés",  a: "e_cles" },
+  { c: "t3",        h: "Tiers", a: "e_t3" },
+  { c: "dribbles",  h: "Drib",  a: "e_drib" },
+  { c: "duels_ok",  h: "Duels", a: "e_duels" },
+  { c: "recup",     h: "Récup", a: "e_recup" },
+  { c: "pertes",    h: "Pertes",a: "e_pertes" },
+  { c: "tirs",      h: "Tirs",  a: "e_tirs" },
+  { c: "buts",      h: "Buts",  a: "e_buts" }
+];
+var TABLES = {};
+
+function valeurTri(j, cle) {
+  if (cle === "nom") return String(j.nom || "").toLowerCase();
+  if (cle === "numero") return j.numero;
+  var r = j.total || j;
+  if (cle === "reussite") return r.passes ? r.passes_ok / r.passes : -1;
+  return r[cle] || 0;
+}
+
+function triCol(id, cle) {
+  var e = TABLES[id];
+  if (!e) return;
+  // meme colonne : on inverse. Nouvelle colonne : decroissant d'abord pour les
+  // chiffres (le meilleur en haut), croissant pour les noms.
+  if (e.cle === cle) e.sens = -e.sens;
+  else { e.cle = cle; e.sens = (cle === "nom") ? 1 : -1; }
+  var vieux = document.getElementById("tab-" + id);
+  if (vieux) vieux.outerHTML = tableauJoueurs(e.joueurs, id);
+}
+
+function tableauJoueurs(joueurs, id) {
+  id = id || "tj";
+  var e = TABLES[id] || (TABLES[id] = { cle: "actions", sens: -1 });
+  e.joueurs = joueurs;
+
+  var tri = joueurs.slice().sort(function (a, b) {
+    var va = valeurTri(a, e.cle), vb = valeurTri(b, e.cle);
+    if (va < vb) return -e.sens;
+    if (va > vb) return e.sens;
+    return (b.total || b).actions - (a.total || a).actions;
+  });
+
+  var th = function (cle, texte, aide, g) {
+    var actif = e.cle === cle;
+    return '<th class="tri' + (g ? " g" : "") + (actif ? " actif" : "") + '" tabindex="0"'
+      + ' data-aide="' + aide + '" role="button" aria-sort="'
+      + (actif ? (e.sens > 0 ? "ascending" : "descending") : "none") + '"'
+      + ' data-tri="' + cle + '" data-tab="' + id + '">'
+      + esc(texte) + '<i>' + (actif ? (e.sens > 0 ? "▲" : "▼") : "") + '</i></th>';
+  };
+
+  // tout est dans le bloc porteur de l'id : c'est lui que le tri remplace, donc
+  // l'astuce ne peut pas se dupliquer a chaque clic.
+  return '<div id="tab-' + id + '"><div class="astuce">' + t("triAide") + '</div>'
+    + '<div class="tw"><table><thead><tr>'
+    + th("numero", "N°", "e_numero", 1)
+    + th("nom", t("joueur"), "e_joueur", 1)
+    + COLS.map(function (c) { return th(c.c, c.h, c.a); }).join("")
+    + th("reussite", t("reussite"), "e_reussite")
+    + '</tr></thead><tbody>'
+    + tri.map(function (j) {
         var r = j.total || j;
-        return '<tr onclick="location.hash=\'#/joueur/' + j.numero + '\'">'
+        return '<tr data-joueur="' + j.numero + '">'
           + '<td class="g jn">' + photo(j, 26) + '<span class="nu">' + j.numero + '</span></td>'
           + '<td class="g nom">' + esc(j.nom) + '</td>'
-          + cols.map(function (c) { return "<td>" + (r[c[0]] || 0) + "</td>"; }).join("")
+          + COLS.map(function (c) { return "<td>" + (r[c.c] || 0) + "</td>"; }).join("")
           + '<td>' + pct(r.passes_ok, r.passes) + '</td></tr>';
-      }).join("") + '</tbody></table></div>';
+      }).join("") + '</tbody></table></div></div>';
 }
+
+/* Une seule bulle, posee sur le body en position fixe : dans le tableau elle
+   serait rognee par le conteneur qui defile horizontalement. */
+var BULLE = null;
+function bulle(cible) {
+  if (!BULLE) {
+    BULLE = document.createElement("div");
+    BULLE.className = "bulle";
+    document.body.appendChild(BULLE);
+  }
+  if (!cible) { BULLE.classList.remove("on"); return; }
+  BULLE.textContent = t(cible.getAttribute("data-aide"));
+  BULLE.classList.add("on");
+  var r = cible.getBoundingClientRect(), b = BULLE.getBoundingClientRect();
+  var x = Math.min(Math.max(8, r.left + r.width / 2 - b.width / 2), innerWidth - b.width - 8);
+  var y = r.bottom + 8;
+  if (y + b.height > innerHeight - 8) y = r.top - b.height - 8;
+  BULLE.style.left = Math.round(x) + "px";
+  BULLE.style.top = Math.round(y) + "px";
+}
+document.addEventListener("mouseover", function (ev) {
+  var c = ev.target.closest && ev.target.closest("[data-aide]");
+  if (c) bulle(c);
+});
+document.addEventListener("mouseout", function (ev) {
+  if (ev.target.closest && ev.target.closest("[data-aide]")) bulle(null);
+});
+document.addEventListener("focusin", function (ev) {
+  var c = ev.target.closest && ev.target.closest("[data-aide]");
+  bulle(c || null);
+});
+document.addEventListener("focusout", function () { bulle(null); });
+document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") bulle(null); });
+
+/* Tri et ouverture d'une fiche : ecouteurs delegues plutot que des attributs
+   onclick, qui obligent a imbriquer des guillemets dans du HTML dans du JS. */
+document.addEventListener("click", function (ev) {
+  var h = ev.target.closest && ev.target.closest("th[data-tri]");
+  if (h) { triCol(h.getAttribute("data-tab"), h.getAttribute("data-tri")); return; }
+  var r = ev.target.closest && ev.target.closest("tr[data-joueur]");
+  if (r) location.hash = "#/joueur/" + r.getAttribute("data-joueur");
+});
+document.addEventListener("keydown", function (ev) {
+  if (ev.key !== "Enter" && ev.key !== " ") return;
+  var h = ev.target.closest && ev.target.closest("th[data-tri]");
+  if (!h) return;
+  ev.preventDefault();
+  triCol(h.getAttribute("data-tab"), h.getAttribute("data-tri"));
+});
 
 function vueJoueurs() {
   return '<div class="entete"><div><h1>' + t("tousJ") + '</h1><div class="sous">'
     + t("cumul") + '</div></div></div>'
-    + '<div class="carte">' + tableauJoueurs(IDX.joueurs) + '</div>';
+    + '<div class="carte">' + tableauJoueurs(IDX.joueurs, 'tous') + '</div>';
 }
 
 function vueMatch(d) {
@@ -379,7 +541,7 @@ function vueMatch(d) {
   });
 
   h += '<div class="carte"><h2>' + t("joueurs") + '</h2><div class="lg">' + esc(IDX.equipe)
-     + '</div>' + tableauJoueurs(d.joueurs) + '</div>';
+     + '</div>' + tableauJoueurs(d.joueurs, 'match') + '</div>';
 
   var cv = Object.keys(d.couverture).map(function (k) { return d.couverture[k]; });
   h += '<div class="carte"><h2>' + t("methode") + '</h2><div class="note">'
