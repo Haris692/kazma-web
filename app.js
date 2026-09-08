@@ -6,7 +6,7 @@
    Code couleur unique dans toute l'app : vert = reussi, rouge = rate, gris = neutre.
    Il est porte par la donnee (champ `issue` du dictionnaire), jamais devine ici. */
 
-var IDX = null, CACHE = {}, CARTES = {}, LANG = localStorage.getItem("kz-lang") || "fr";
+var IDX = null, CACHE = {}, CARTES = {}, SEL = {}, LANG = localStorage.getItem("kz-lang") || "fr";
 var L = 105, W = 68, TIERS = 70;
 
 var T = {
@@ -194,10 +194,25 @@ var T = {
   g_aeriens:  { fr: "Duels aériens",        en: "Aerial duels",       ar: "الكرات الهوائية" },
   g_dribbles: { fr: "Dribbles",             en: "Dribbles",           ar: "المراوغات" },
   g_tacles:   { fr: "Tacles",               en: "Tackles",            ar: "العرقلات" },
-  g_tirs:     { fr: "Tirs",                 en: "Shots",              ar: "التسديدات" }
+  g_tirs:     { fr: "Tirs",                 en: "Shots",              ar: "التسديدات" },
+
+  /* --- filtre par match sur la fiche joueur --- */
+  tousM:      { fr: "Tous les matchs",      en: "All matches",        ar: "كل المباريات" },
+  minutesM:   { fr: "estimées sur ce match", en: "estimated for this match", ar: "تقديرية لهذه المباراة" },
+  surCeMatch: { fr: "sur ce match",         en: "in this match",      ar: "في هذه المباراة" },
+  tirs1:      { fr: "tir",                  en: "attempt",            ar: "تسديدة" },
+  actions1:   { fr: "action",               en: "action",             ar: "لمسة" },
+  lRecup1:    { fr: "Récupération",         en: "Recovery",           ar: "استخلاص" },
+  lPertes1:   { fr: "Perte de balle",       en: "Loss",               ar: "كرة مفقودة" },
+  reussies1:  { fr: "réussie",              en: "completed",          ar: "ناجحة" },
+  pasAssezM:  { fr: "Il a joué trop peu de ce match pour être situé dans l’équipe. Sur quelques minutes, un seul ballon fait basculer un axe d’un bout à l’autre.",
+                en: "He played too little of this match to be placed within the team. Over a few minutes a single touch swings an axis from end to end.",
+                ar: "لعب وقتًا قصيرًا جدًا في هذه المباراة لتحديد موقعه داخل الفريق. في دقائق قليلة، لمسة واحدة تقلب المحور بالكامل." }
 };
 
 function t(k) { var e = T[k]; return e ? (e[LANG] || e.fr) : k; }
+/* accord en nombre : « 1 tirs » sur la fiche d'un remplacant fait desordre */
+function pl(n, cle) { return n + " " + t(n === 1 && T[cle + "1"] ? cle + "1" : cle).toLowerCase(); }
 function lib(tag) {
   var d = IDX.libelles.tags[tag];
   return d ? (d[LANG] || d.fr) : tag;
@@ -496,10 +511,19 @@ document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") bu
 /* Tri et ouverture d'une fiche : ecouteurs delegues plutot que des attributs
    onclick, qui obligent a imbriquer des guillemets dans du HTML dans du JS. */
 document.addEventListener("click", function (ev) {
+  var f = ev.target.closest && ev.target.closest("[data-mf]");
+  if (f) {
+    var nj = parseInt(f.getAttribute("data-mj"), 10);
+    SEL[nj] = f.getAttribute("data-mf") || null;
+    $("#vue").innerHTML = vueJoueur(nj);
+    return;
+  }
   var h = ev.target.closest && ev.target.closest("th[data-tri]");
   if (h) { triCol(h.getAttribute("data-tab"), h.getAttribute("data-tri")); return; }
   var r = ev.target.closest && ev.target.closest("tr[data-joueur]");
-  if (r) location.hash = "#/joueur/" + r.getAttribute("data-joueur");
+  if (r) { location.hash = "#/joueur/" + r.getAttribute("data-joueur"); return; }
+  var q = ev.target.closest && ev.target.closest("tr[data-match]");
+  if (q) location.hash = "#/match/" + q.getAttribute("data-match");
 });
 document.addEventListener("keydown", function (ev) {
   if (ev.key !== "Enter" && ev.key !== " ") return;
@@ -713,18 +737,16 @@ function radarSvg(p) {
        + esc(t("profil")) + '">' + g + '</svg>';
 }
 
-function blocProfil(j) {
-  var R = IDX.radars;
-  if (!R || !R.joueurs) return "";
-  var p = R.joueurs[String(j.numero)] || R.joueurs[j.numero];
+function blocProfil(p, surUnMatch) {
   if (!p) return "";
   var poste = p.poste ? '<span class="puce">' + esc(t("p_" + p.poste)) + '</span> · ' : "";
   var tete = '<h2>' + t("profil") + '</h2><div class="lg">' + poste + p.minutes + " "
-           + t("minutes") + " " + t("minutesN") + '</div>';
+           + t("minutes") + " "
+           + (surUnMatch ? t("minutesM") : t("minutesN")) + '</div>';
 
   if (!p.reference) {
     return '<div class="carte">' + tete + '<div class="vide court"><b>' + t("pasAssez")
-         + '</b>' + t("pasAssezN") + '</div></div>';
+         + '</b>' + (surUnMatch ? t("pasAssezM") : t("pasAssezN")) + '</div></div>';
   }
 
   var tri = p.axes.slice().sort(function (a, b) { return b.centile - a.centile; });
@@ -749,8 +771,8 @@ function blocProfil(j) {
        + '<div class="lst mini"><div><b>' + p.hors_axe.pct_duels + ' %</b><span>'
        + t("pctDuels") + '</span></div><div><b>' + p.hors_axe.pertes + '</b><span>'
        + t("pertes90") + '</span></div></div>'
-       + '<div class="radar-note"><i></i>' + t("mediane") + ' · ' + R.effectif + ' '
-       + t("joueurs").toLowerCase() + '</div>'
+       + '<div class="radar-note"><i></i>' + t("mediane") + ' · ' + p.axes[0].sur + ' '
+       + t("joueurs").toLowerCase() + (surUnMatch ? ' · ' + t("surCeMatch") : '') + '</div>'
        + '</div></div></div>';
 }
 
@@ -781,7 +803,7 @@ function carteTirs(c) {
   var cpt = [0, 0, 0, 0];
   c.tirs.forEach(function (p) { cpt[p[2]]++; });
   return '<div class="carte"><h2>' + t("cTirs") + '</h2><div class="lg">'
-    + n + " " + t("tirs").toLowerCase() + " · " + t("cTirsN") + '</div>'
+    + pl(n, "tirs") + " · " + t("cTirsN") + '</div>'
     + terrain(nuageTirs(c.tirs), { tiers: "var(--nous)", alt: t("cTirs") })
     + legende([["var(--vert)", t("iBut") + " (" + cpt[3] + ")", "anneau"],
                ["var(--vert)", t("iCadre") + " (" + cpt[2] + ")"],
@@ -794,7 +816,7 @@ function carteProg(c) {
   if (!c.prog.length) return "";
   var ok = c.prog.filter(function (p) { return p[2]; }).length;
   return '<div class="carte"><h2>' + t("cProg") + '</h2><div class="lg">'
-    + c.prog.length + " · " + ok + " " + t("reussies") + '</div>'
+    + c.prog.length + " · " + pl(ok, "reussies") + '</div>'
     + terrain(c.prog.map(function (p) {
         return point(p[0], p[1], 1.5, p[2] ? "var(--vert)" : "var(--rouge)", 1);
       }).join(""), { alt: t("cProg") })
@@ -804,8 +826,7 @@ function carteProg(c) {
 function carteBallons(c) {
   if (!c.recup.length && !c.pertes.length) return "";
   return '<div class="carte"><h2>' + t("cBallons") + '</h2><div class="lg">'
-    + c.recup.length + " " + t("lRecup").toLowerCase() + " · "
-    + c.pertes.length + " " + t("lPertes").toLowerCase() + '</div>'
+    + pl(c.recup.length, "lRecup") + " · " + pl(c.pertes.length, "lPertes") + '</div>'
     + terrain(c.pertes.map(function (p) { return point(p[0], p[1], 1.5, "var(--rouge)", 1); }).join("")
             + c.recup.map(function (p) { return point(p[0], p[1], 1.5, "var(--vert)", 1); }).join(""),
               { alt: t("cBallons") })
@@ -831,7 +852,7 @@ function carteZones(c) {
          + ' font-weight="700" fill="#fff" fill-opacity=".92">' + part + '%</text>';
   }
   return '<div class="carte"><h2>' + t("cZones") + '</h2><div class="lg">'
-    + tot + " " + t("actions") + " · " + t("cZonesN") + '</div>'
+    + pl(tot, "actions") + " · " + t("cZonesN") + '</div>'
     + terrain(s, { alt: t("cZones") }) + '</div>';
 }
 
@@ -875,30 +896,61 @@ function gestes(tags) {
 function vueJoueur(num) {
   var j = IDX.joueurs.filter(function (x) { return x.numero === num; })[0];
   if (!j) return '<div class="vide"><b>' + t("introuvable") + '</b></div>';
-  var tt = j.total;
+  var c = CARTES[num];
+  var sel = SEL[num] || null;                 // null = toute la saison
+  if (sel && !j.matchs.some(function (m) { return m.match_id === sel; })) sel = null;
+
+  // La vue par defaut est la saison. Un match selectionne refait TOUT : les
+  // chiffres, le radar, les cartes et les barres. Un filtre qui ne changerait
+  // que la moitie de la page serait pire que pas de filtre du tout.
+  var mm = sel ? j.matchs.filter(function (m) { return m.match_id === sel; })[0] : null;
+  var tt = mm || j.total;
+  var im = (sel && c) ? c.matchs.map(function (m) { return m.match_id; }).indexOf(sel) : -1;
+  var quand = function (pt) { return im < 0 || pt[pt.length - 1] === im; };
+
   var h = '<div class="entete"><div class="jt">' + photo(j, 62)
     + '<div><h1>' + esc(j.nom) + '</h1><div class="sous"><span class="puce">N° ' + j.numero
-    + '</span> · ' + j.matchs.length + ' ' + t("matchs").toLowerCase() + ' · ' + esc(IDX.equipe)
-    + '</div></div></div></div>'
-    + kpis([[t("actions"), tt.actions], [t("passes"), tt.passes],
-            [t("reussite"), pct(tt.passes_ok, tt.passes)],
-            [t("prog"), tt.prog, "f"], [t("tiers"), tt.t3],
-            [t("tirs"), tt.tirs], [t("but"), tt.buts, "ok"]]);
+    + '</span> · ' + (mm ? dateFr(mm.date) + ' · ' + esc(mm.adversaire)
+                         : j.matchs.length + ' ' + t("matchs").toLowerCase())
+    + ' · ' + esc(IDX.equipe) + '</div></div></div></div>';
 
-  h += blocProfil(j);
+  h += '<div class="filtre">'
+    + '<b class="' + (sel ? "" : "on") + '" data-mf="" data-mj="' + num + '">'
+    + t("tousM") + '</b>'
+    + j.matchs.map(function (m) {
+        return '<b class="' + (sel === m.match_id ? "on" : "") + '" data-mf="' + m.match_id
+             + '" data-mj="' + num + '">' + dateFr(m.date) + ' · ' + esc(m.adversaire) + '</b>';
+      }).join("") + '</div>';
 
-  var pts = j.matchs.filter(function (m) { return m.x_med != null; }).map(function (m) {
-    return point(m.x_med, m.y_med, 2.4, "var(--nous)", 1);
-  }).join("");
+  h += kpis([[t("actions"), tt.actions], [t("passes"), tt.passes],
+             [t("reussite"), pct(tt.passes_ok, tt.passes)],
+             [t("prog"), tt.prog, "f"], [t("tiers"), tt.t3],
+             [t("tirs"), tt.tirs], [t("but"), tt.buts, "ok"]]);
+
+  var prof = sel ? (c && c.radar_m ? c.radar_m[sel] : null)
+                 : (IDX.radars && IDX.radars.joueurs
+                    ? (IDX.radars.joueurs[String(num)] || IDX.radars.joueurs[num]) : null);
+  h += blocProfil(prof, !!sel);
+
+  var pts = (mm ? [mm] : j.matchs).filter(function (m) { return m.x_med != null; })
+    .map(function (m) { return point(m.x_med, m.y_med, 2.4, "var(--nous)", 1); }).join("");
   var carteP = '<div class="carte"><h2>' + t("position") + '</h2><div class="lg">'
      + t("positionN") + '</div>' + terrain(pts, { lignes: 1, alt: j.nom }) + '</div>';
 
-  // les cartes, deux par ligne : petites, et lisibles cote a cote
-  var c = CARTES[num];
-  var blocs = (c ? [carteZones(c), carteTirs(c), carteProg(c), carteBallons(c)] : [])
-              .concat([carteP]).filter(function (b) { return b; });
+  var blocs = [];
+  if (c) {
+    var cf = {
+      tirs:   c.tirs.filter(quand),   prog:   c.prog.filter(quand),
+      recup:  c.recup.filter(quand),  pertes: c.pertes.filter(quand),
+      zones:  sel ? (c.zones_m || {})[sel] : c.zones
+    };
+    blocs = [carteZones(cf), carteTirs(cf), carteProg(cf), carteBallons(cf)];
+  }
+  blocs = blocs.concat([carteP]).filter(function (b) { return b; });
   h += '<div class="duo">' + blocs.join("") + '</div>';
-  if (c) h += gestes(j.tags || {});
+
+  var tags = sel ? ((c && c.tags_m) ? c.tags_m[sel] : null) : j.tags;
+  h += gestes(tags || {});
 
   h += '<div class="carte"><h2>' + t("parMatch") + '</h2><div class="lg">' + t("ouvrirM") + '</div>'
     + '<div class="tw"><table><thead><tr><th class="g">' + t("date") + '</th><th class="g">'
@@ -906,15 +958,16 @@ function vueJoueur(num) {
     + '</th><th>' + t("tiers") + '</th><th>' + t("tirs") + '</th><th>' + t("but") + '</th>'
     + '</tr></thead><tbody>'
     + j.matchs.map(function (m) {
-        return '<tr onclick="location.hash=\'#/match/' + m.match_id + '\'">'
+        return '<tr data-match="' + m.match_id + '"' + (sel === m.match_id ? ' class="sel"' : '') + '>'
           + '<td class="g nu">' + dateFr(m.date) + '</td><td class="g nom">' + esc(m.adversaire) + '</td>'
           + '<td>' + m.actions + '</td><td>' + m.passes + '</td><td>' + m.passes_ok + '</td>'
           + '<td>' + m.prog + '</td><td>' + m.t3 + '</td><td>' + m.tirs + '</td>'
           + '<td>' + (m.buts || 0) + '</td></tr>';
       }).join("") + '</tbody></table></div></div>';
 
-  h += '<h2 class="sec">' + t("stats") + '</h2><div class="lg sec-lg">' + t("cumul") + ' · '
-     + t("toutXml") + '</div>' + statsListe(j.tags || {});
+  h += '<h2 class="sec">' + t("stats") + '</h2><div class="lg sec-lg">'
+     + (mm ? dateFr(mm.date) + ' · ' + esc(mm.adversaire) : t("cumul")) + ' · '
+     + t("toutXml") + '</div>' + statsListe(tags || {});
   return h;
 }
 

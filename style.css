@@ -172,6 +172,16 @@ h2.sec{font-size:20px;margin:30px 0 3px}
    (font-size 3.4) sort a ~16 px. Plus large, la carte ecrase la page ;
    plus etroit, les noms deviennent illisibles. */
 
+/* ---------- filtre par match ---------- */
+.filtre{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+.filtre b{font-size:12.5px;font-weight:600;padding:6px 13px;border-radius:20px;
+          border:1px solid var(--bord);background:var(--carte);color:var(--texte-2);
+          cursor:pointer;user-select:none;white-space:nowrap}
+.filtre b:hover{border-color:var(--bord-clair);color:var(--texte)}
+.filtre b.on{background:var(--kazma);border-color:var(--kazma);color:#fff}
+tbody tr.sel{background:var(--carte-2);box-shadow:inset 2px 0 0 var(--kazma)}
+html[dir="rtl"] tbody tr.sel{box-shadow:inset -2px 0 0 var(--kazma)}
+
 /* ---------- reussite geste par geste ---------- */
 .gestes{display:flex;flex-direction:column;gap:2px}
 .ge{display:grid;grid-template-columns:120px minmax(0,1fr) 62px 46px;align-items:center;
