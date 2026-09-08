@@ -66,7 +66,50 @@ var T = {
   aucune:     { fr: "Aucune donnée",       en: "No data",            ar: "لا توجد بيانات" },
   source:     { fr: "Données du fournisseur, traitées localement.",
                 en: "Provider data, processed locally.",
-                ar: "بيانات المزوّد، معالجة محليًا." }
+                ar: "بيانات المزوّد، معالجة محليًا." },
+
+  /* --- profil du joueur (radar) --- */
+  profil:     { fr: "Profil",              en: "Profile",            ar: "الملف الفني" },
+  profilN:    { fr: "Rang dans l’effectif de Kazma, ramené à 90 minutes",
+                en: "Rank within the Kazma squad, per 90 minutes",
+                ar: "الترتيب داخل فريق كاظمة، لكل 90 دقيقة" },
+  mediane:    { fr: "médiane de l’effectif", en: "squad median",     ar: "وسيط الفريق" },
+  forts:      { fr: "Points forts",        en: "Strengths",          ar: "نقاط القوة" },
+  faibles:    { fr: "Points faibles",      en: "Weaknesses",         ar: "نقاط الضعف" },
+  equilibre:  { fr: "Profil équilibré, aucun axe ne se détache.",
+                en: "Balanced profile, no axis stands out.",
+                ar: "ملف متوازن، لا يبرز أي محور." },
+  minutes:    { fr: "minutes",             en: "minutes",            ar: "دقيقة" },
+  minutesN:   { fr: "estimées, ramenées à des matchs de 90",
+                en: "estimated, scaled to 90-minute matches",
+                ar: "تقديرية، معدّلة إلى مباريات من 90 دقيقة" },
+  pasAssez:   { fr: "Pas assez de temps de jeu pour un profil",
+                en: "Not enough playing time for a profile",
+                ar: "وقت لعب غير كافٍ لعرض الملف" },
+  pasAssezN:  { fr: "Il faut l’équivalent d’un match complet. Sur un échantillon plus court, un seul ballon fait basculer un axe d’un bout à l’autre : le radar serait faux et flatteur.",
+                en: "A full match equivalent is required. On a shorter sample a single touch swings an axis from end to end: the radar would be wrong and flattering.",
+                ar: "يلزم ما يعادل مباراة كاملة. على عينة أقصر، لمسة واحدة تقلب المحور بالكامل: سيكون الرسم خاطئًا ومضلِّلًا." },
+  sur:        { fr: "sur",                 en: "of",                 ar: "من" },
+  pertes90:   { fr: "Pertes de balle / 90", en: "Losses / 90",       ar: "فقدان الكرة / 90" },
+  pctDuels:   { fr: "Duels gagnés",        en: "Duels won",          ar: "الالتحامات المكسوبة" },
+  horsBase:   { fr: "Comparé à l’effectif, mais pas encore compté dedans",
+                en: "Compared with the squad, not yet counted in it",
+                ar: "مقارَن بالفريق، لكنه غير محتسب فيه بعد" },
+
+  ax_volume:      { fr: "Volume de passes", en: "Passing volume",    ar: "حجم التمرير" },
+  ax_precision:   { fr: "Précision",        en: "Accuracy",          ar: "دقة التمرير" },
+  ax_progression: { fr: "Progression",      en: "Progression",       ar: "التقدم بالكرة" },
+  ax_creation:    { fr: "Création",         en: "Chance creation",   ar: "صناعة الفرص" },
+  ax_tir:         { fr: "Tir",              en: "Shooting",          ar: "التسديد" },
+  ax_dribble:     { fr: "Dribble",          en: "Dribbling",         ar: "المراوغة" },
+  ax_duel:        { fr: "Duels",            en: "Duels",             ar: "الالتحامات" },
+  ax_recuperation:{ fr: "Récupération",     en: "Ball recovery",     ar: "استخلاص الكرة" },
+
+  p_gardien:   { fr: "Gardien",     en: "Goalkeeper", ar: "حارس مرمى" },
+  p_defense:   { fr: "Défenseur",   en: "Defender",   ar: "مدافع" },
+  p_milieu:    { fr: "Milieu",      en: "Midfielder", ar: "لاعب وسط" },
+  p_ailier:    { fr: "Ailier",      en: "Winger",     ar: "جناح" },
+  p_attaquant: { fr: "Attaquant",   en: "Forward",    ar: "مهاجم" }
 };
 
 function t(k) { var e = T[k]; return e ? (e[LANG] || e.fr) : k; }
@@ -412,6 +455,104 @@ function reseauSvg(d, liens, seuil, titre) {
     + terrain(s + noms, { alt: titre }) + '</div>';
 }
 
+/* ------------------------------------------------------- profil : le radar
+   Huit axes, echelle en centiles dans l'effectif de Kazma. Le centile est un
+   RANG, pas une note : l'anneau du milieu est par construction la mediane de
+   l'effectif, donc ce qui deborde vers l'exterieur est un point fort et ce qui
+   rentre vers le centre un point faible. La valeur brute pour 90 minutes est
+   ecrite a cote de chaque axe, parce qu'un rang sur douze joueurs ne dit pas
+   la meme chose qu'un rang sur toute une ligue. */
+function radarSvg(p) {
+  var A = p.axes, n = A.length, CX = 210, CY = 190, R = 108;
+  var ang = function (i) { return (i / n) * 2 * Math.PI - Math.PI / 2; };
+  var pol = function (i, r) {
+    return [CX + Math.cos(ang(i)) * r, CY + Math.sin(ang(i)) * r];
+  };
+  var poly = function (r) {
+    var d = [];
+    for (var i = 0; i < n; i++) { var q = pol(i, r); d.push(q[0].toFixed(1) + "," + q[1].toFixed(1)); }
+    return d.join(" ");
+  };
+
+  var g = "";
+  [25, 50, 75, 100].forEach(function (v) {
+    g += '<polygon points="' + poly(R * v / 100) + '" fill="none" stroke="var(--bord)" '
+       + 'stroke-width="1"' + (v === 100 ? ' stroke="var(--bord-clair)"' : '') + '/>';
+  });
+  // l'anneau du milieu : la mediane de l'effectif, la seule reference qui compte
+  g += '<polygon points="' + poly(R * .5) + '" fill="none" stroke="var(--texte-3)" '
+     + 'stroke-width="1.4" stroke-dasharray="4 4"/>';
+  for (var i = 0; i < n; i++) {
+    var q = pol(i, R);
+    g += '<line x1="' + CX + '" y1="' + CY + '" x2="' + q[0].toFixed(1) + '" y2="' + q[1].toFixed(1)
+       + '" stroke="var(--bord)" stroke-width="1"/>';
+  }
+
+  var pts = [], som = "";
+  for (var k = 0; k < n; k++) {
+    var r = R * Math.max(A[k].centile, 2) / 100, q = pol(k, r);
+    pts.push(q[0].toFixed(1) + "," + q[1].toFixed(1));
+    var c = A[k].centile >= 70 ? "var(--vert)" : (A[k].centile <= 30 ? "var(--rouge)" : "var(--kazma-clair)");
+    som += '<circle cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="4" fill="' + c
+         + '" stroke="var(--carte)" stroke-width="1.5"/>';
+  }
+  g += '<polygon points="' + pts.join(" ") + '" fill="var(--kazma)" fill-opacity=".26" '
+     + 'stroke="var(--kazma-clair)" stroke-width="2" stroke-linejoin="round"/>' + som;
+
+  for (var m = 0; m < n; m++) {
+    var e = pol(m, R + 24), co = Math.cos(ang(m));
+    var anc = co > .3 ? "start" : (co < -.3 ? "end" : "middle");
+    var val = A[m].cle === "precision" ? Math.round(A[m].valeur) + " %" : A[m].valeur;
+    g += '<text x="' + e[0].toFixed(1) + '" y="' + e[1].toFixed(1) + '" text-anchor="' + anc
+       + '" font-size="11.5" fill="var(--texte-2)" font-weight="600">' + esc(t("ax_" + A[m].cle))
+       + '<tspan x="' + e[0].toFixed(1) + '" dy="13" font-size="11" font-weight="400" '
+       + 'fill="var(--texte-3)">' + val + ' · ' + A[m].rang + '/' + A[m].sur + '</tspan></text>';
+  }
+  return '<svg class="radar" viewBox="0 0 420 380" role="img" aria-label="'
+       + esc(t("profil")) + '">' + g + '</svg>';
+}
+
+function blocProfil(j) {
+  var R = IDX.radars;
+  if (!R || !R.joueurs) return "";
+  var p = R.joueurs[String(j.numero)] || R.joueurs[j.numero];
+  if (!p) return "";
+  var poste = p.poste ? '<span class="puce">' + esc(t("p_" + p.poste)) + '</span> · ' : "";
+  var tete = '<h2>' + t("profil") + '</h2><div class="lg">' + poste + p.minutes + " "
+           + t("minutes") + " " + t("minutesN") + '</div>';
+
+  if (!p.reference) {
+    return '<div class="carte">' + tete + '<div class="vide court"><b>' + t("pasAssez")
+         + '</b>' + t("pasAssezN") + '</div></div>';
+  }
+
+  var tri = p.axes.slice().sort(function (a, b) { return b.centile - a.centile; });
+  var forts = tri.filter(function (a) { return a.centile >= 70; }).slice(0, 3);
+  var faibles = tri.filter(function (a) { return a.centile <= 30; }).reverse().slice(0, 3);
+  var liste = function (arr, cl) {
+    return arr.map(function (a) {
+      return '<span class="tag ' + cl + '">' + esc(t("ax_" + a.cle)) + ' <b>' + a.rang
+           + '<i>/' + a.sur + '</i></b></span>';
+    }).join("");
+  };
+  var verdict = (forts.length || faibles.length)
+    ? (forts.length ? '<div class="fw"><span class="fw-t">' + t("forts") + '</span>'
+                      + liste(forts, "ok") + '</div>' : "")
+      + (faibles.length ? '<div class="fw"><span class="fw-t">' + t("faibles") + '</span>'
+                      + liste(faibles, "ko") + '</div>' : "")
+    : '<div class="fw"><span class="fw-t">' + t("equilibre") + '</span></div>';
+
+  return '<div class="carte">' + tete
+       + '<div class="radar-wrap">' + radarSvg(p)
+       + '<div class="radar-cote">' + verdict
+       + '<div class="lst mini"><div><b>' + p.hors_axe.pct_duels + ' %</b><span>'
+       + t("pctDuels") + '</span></div><div><b>' + p.hors_axe.pertes + '</b><span>'
+       + t("pertes90") + '</span></div></div>'
+       + '<div class="radar-note"><i></i>' + t("mediane") + ' · ' + R.effectif + ' '
+       + t("joueurs").toLowerCase() + '</div>'
+       + '</div></div></div>';
+}
+
 function vueJoueur(num) {
   var j = IDX.joueurs.filter(function (x) { return x.numero === num; })[0];
   if (!j) return '<div class="vide"><b>' + t("introuvable") + '</b></div>';
@@ -424,6 +565,8 @@ function vueJoueur(num) {
             [t("reussite"), pct(tt.passes_ok, tt.passes)],
             [t("prog"), tt.prog, "f"], [t("tiers"), tt.t3],
             [t("tirs"), tt.tirs], [t("but"), tt.buts, "ok"]]);
+
+  h += blocProfil(j);
 
   var pts = j.matchs.filter(function (m) { return m.x_med != null; }).map(function (m) {
     return point(m.x_med, m.y_med, 2.4, "var(--nous)", 1);
