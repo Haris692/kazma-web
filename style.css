@@ -86,11 +86,17 @@ td.num{color:var(--texte-3)}
      gap:9px;padding:6px 0;border-bottom:1px solid var(--bord)}
 .cmp:last-child{border-bottom:none}
 .cmp .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
-.cmp .v.a{color:var(--eux)} .cmp .v.b{text-align:right;color:var(--nous)}
+.cmp .v{color:var(--texte-2)} .cmp .v.b{text-align:right}
 .cmp .l{text-align:center;font-size:12.5px;color:var(--texte-2)}
 .cmp .bar{height:6px;background:var(--fond-2);border-radius:3px;position:relative;overflow:hidden}
 .cmp .bar i{position:absolute;top:0;bottom:0;display:block;border-radius:3px}
-.cmp .bar i.a{right:0;background:var(--eux)} .cmp .bar i.b{left:0;background:var(--nous)}
+.cmp .bar i.a{right:0} .cmp .bar i.b{left:0}
+.cmp .bar i.neutre{background:var(--bord-clair)}
+.cmp .bar i.sup{background:var(--vert)} .cmp .bar i.inf{background:var(--rouge)}
+.cmp .v.neutre{color:var(--texte-2)}
+.cmp .v.sup{color:var(--vert)} .cmp .v.inf{color:var(--rouge)}
+.leg.code{margin:0 0 14px;padding:9px 14px;background:var(--carte);
+          border:1px solid var(--bord);border-radius:var(--r)}
 
 .pitch{width:100%;height:auto;display:block}
 .leg{display:flex;gap:8px 18px;flex-wrap:wrap;font-size:12px;color:var(--texte-2);margin-top:10px}
@@ -145,9 +151,7 @@ h2.sec{font-size:20px;margin:30px 0 3px}
 .cmp.tete{border-bottom:1px solid var(--bord-clair);padding-bottom:8px;margin-bottom:4px}
 .cmp .nomEq{font-size:13px;font-weight:600}
 .cmp.tete .v.a{text-align:left}
-.cmp.ok .l{color:var(--vert)} .cmp.ko .l{color:var(--rouge)}
-.cmp.ok .bar i.b{background:var(--vert)} .cmp.ko .bar i.b{background:var(--rouge)}
-.cmp.ok .v.b{color:var(--vert)} .cmp.ko .v.b{color:var(--rouge)}
+.cmp .nomEq{color:var(--texte)}
 
 /* ---------- liste de statistiques (fiche joueur) ---------- */
 .lst{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;

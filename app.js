@@ -78,6 +78,10 @@ function issueDe(tag) {
   var d = IDX.libelles.tags[tag];
   return d ? d.issue : null;
 }
+function sensDe(tag) {
+  var d = IDX.libelles.tags[tag];
+  return d && d.sens != null ? d.sens : 0;
+}
 function famDe(tag) {
   var d = IDX.libelles.tags[tag];
   return d ? d.fam : "autres";
@@ -132,24 +136,32 @@ function parFamille(tags) {
          .filter(function (x) { return x[1].length; });
 }
 
-/* comparaison des deux equipes, toutes etiquettes */
-function statsCompletes(tagsA, tagsB, nomA, nomB) {
+/* Comparaison des deux equipes.
+   Une seule chose est mise en evidence : la position de NOTRE equipe.
+   Vert = on fait mieux, rouge = on fait moins bien, gris = pas de jugement.
+   Le sens vient de la donnee : plus de passes reussies est meilleur, plus de
+   pertes de balle est pire, et un volume comme "passes courtes" ne se juge pas. */
+function statsCompletes(tagsA, tagsB, nomA, nomB, nous) {
   var tous = {};
   [tagsA, tagsB].forEach(function (o) { Object.keys(o).forEach(function (k) { tous[k] = 1; }); });
+  var nousEstA = nous === nomA;
   return parFamille(tous).map(function (f) {
-    var lignes = f[1].sort(function (a, b) {
-      return (tagsB[b] || 0) + (tagsA[b] || 0) - (tagsB[a] || 0) - (tagsA[a] || 0);
+    var lignes = f[1].sort(function (x, y) {
+      return (tagsB[y] || 0) + (tagsA[y] || 0) - (tagsB[x] || 0) - (tagsA[x] || 0);
     }).map(function (k) {
-      var a = tagsA[k] || 0, b = tagsB[k] || 0, s = a + b || 1;
-      return '<div class="cmp ' + cls(k) + '"><span class="v a">' + a + '</span>'
-        + '<span class="bar"><i class="a" style="width:' + (100 * a / s).toFixed(1) + '%"></i></span>'
+      var a = tagsA[k] || 0, b = tagsB[k] || 0, s = a + b || 1, sn = sensDe(k);
+      var vn = nousEstA ? a : b, ve = nousEstA ? b : a, etat = "neutre";
+      if (sn !== 0 && vn !== ve) etat = (sn > 0 ? vn > ve : vn < ve) ? "sup" : "inf";
+      var ca = nousEstA ? etat : "neutre", cb = nousEstA ? "neutre" : etat;
+      return '<div class="cmp"><span class="v ' + ca + '">' + a + '</span>'
+        + '<span class="bar"><i class="a ' + ca + '" style="width:' + (100 * a / s).toFixed(1) + '%"></i></span>'
         + '<span class="l">' + esc(lib(k)) + '</span>'
-        + '<span class="bar"><i class="b" style="width:' + (100 * b / s).toFixed(1) + '%"></i></span>'
-        + '<span class="v b">' + b + '</span></div>';
+        + '<span class="bar"><i class="b ' + cb + '" style="width:' + (100 * b / s).toFixed(1) + '%"></i></span>'
+        + '<span class="v ' + cb + '">' + b + '</span></div>';
     }).join("");
     return '<div class="carte"><h2>' + esc(famNom(f[0])) + '</h2>'
-      + '<div class="cmp tete"><span></span><span class="v a nomEq">' + esc(nomA) + '</span>'
-      + '<span class="l"></span><span class="v b nomEq">' + esc(nomB) + '</span><span></span></div>'
+      + '<div class="cmp tete"><span></span><span class="v nomEq">' + esc(nomA) + '</span>'
+      + '<span class="l"></span><span class="v nomEq b">' + esc(nomB) + '</span><span></span></div>'
       + lignes + '</div>';
   }).join("");
 }
@@ -276,7 +288,8 @@ function vueMatch(d) {
             [t("reussite") + " " + t("tiers").toLowerCase(), pct(sn.t3_ok, sn.t3_passes)]]);
 
   h += '<h2 class="sec">' + t("stats") + '</h2><div class="lg sec-lg">' + t("toutXml") + '</div>'
-     + statsCompletes(d.tags[A] || {}, d.tags[B] || {}, A, B);
+     + legendeCode()
+     + statsCompletes(d.tags[A] || {}, d.tags[B] || {}, A, B, nous);
 
   var mk = function (titre, faire) {
     return '<h2 class="sec">' + titre + '</h2><div class="duo">'
@@ -337,6 +350,16 @@ function vueMatch(d) {
            + " ٪ حسب اللاعب. فئات التمرير متداخلة ولا تُجمع. التفاصيل الفردية لفريق كاظمة فقط." }[LANG]
      + '</div></div>';
   return h;
+}
+
+function legendeCode() {
+  var m = { fr: ["Kazma fait mieux", "Kazma fait moins bien", "pas de jugement possible"],
+            en: ["Kazma does better", "Kazma does worse", "no judgement possible"],
+            ar: ["كاظمة أفضل", "كاظمة أقل", "لا حكم ممكن"] }[LANG];
+  return '<div class="leg code">'
+    + '<span><i style="background:var(--vert)"></i>' + m[0] + '</span>'
+    + '<span><i style="background:var(--rouge)"></i>' + m[1] + '</span>'
+    + '<span><i style="background:var(--texte-3)"></i>' + m[2] + '</span></div>';
 }
 
 function legende(items) {
