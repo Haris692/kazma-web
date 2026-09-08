@@ -116,3 +116,59 @@ td.num{color:var(--texte-3)}
 .note b{color:var(--texte-2)}
 .vide{text-align:center;padding:70px 20px;color:var(--texte-3)}
 .vide b{display:block;font-size:17px;color:var(--texte-2);margin-bottom:6px}
+
+/* ---------- langues ---------- */
+.lang{display:flex;gap:6px;padding:0 16px 12px}
+.lang b{flex:1;text-align:center;padding:5px 0;border-radius:7px;font-size:12px;
+        font-weight:600;color:var(--texte-3);background:var(--carte);
+        border:1px solid var(--bord);cursor:pointer;user-select:none}
+.lang b:hover{color:var(--texte)}
+.lang b.on{background:var(--kazma);border-color:var(--kazma);color:#fff}
+
+/* arabe : ecriture droite-a-gauche, et une police qui la rend bien */
+html[dir="rtl"] body{font-family:"Noto Sans Arabic","Inter",system-ui,sans-serif}
+html[dir="rtl"] .side{border-right:none;border-left:1px solid var(--bord)}
+html[dir="rtl"] .nav a.on{box-shadow:inset -2px 0 0 var(--kazma)}
+html[dir="rtl"] th.g,html[dir="rtl"] td.g{text-align:right}
+html[dir="rtl"] th,html[dir="rtl"] td{text-align:left}
+html[dir="rtl"] .cmp .v.a{text-align:right} html[dir="rtl"] .cmp .v.b{text-align:left}
+html[dir="rtl"] .cmp .bar i.a{right:auto;left:0} html[dir="rtl"] .cmp .bar i.b{left:auto;right:0}
+html[dir="rtl"] .lst div{flex-direction:row-reverse}
+/* le terrain garde son sens : l'attaque va toujours vers la droite */
+html[dir="rtl"] .pitch{direction:ltr}
+
+/* ---------- titres de section ---------- */
+h2.sec{font-size:20px;margin:30px 0 3px}
+.sec-lg{color:var(--texte-3);font-size:13px;margin-bottom:14px;max-width:80ch}
+
+/* ---------- comparaison, avec le code couleur ---------- */
+.cmp.tete{border-bottom:1px solid var(--bord-clair);padding-bottom:8px;margin-bottom:4px}
+.cmp .nomEq{font-size:13px;font-weight:600}
+.cmp.tete .v.a{text-align:left}
+.cmp.ok .l{color:var(--vert)} .cmp.ko .l{color:var(--rouge)}
+.cmp.ok .bar i.b{background:var(--vert)} .cmp.ko .bar i.b{background:var(--rouge)}
+.cmp.ok .v.b{color:var(--vert)} .cmp.ko .v.b{color:var(--rouge)}
+
+/* ---------- liste de statistiques (fiche joueur) ---------- */
+.lst{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;
+     background:var(--bord);border:1px solid var(--bord);border-radius:8px;overflow:hidden}
+.lst div{background:var(--carte);padding:9px 13px;display:flex;align-items:baseline;gap:10px}
+.lst b{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;min-width:34px}
+.lst span{font-size:12.5px;color:var(--texte-2);line-height:1.35}
+.lst .ok b{color:var(--vert)} .lst .ko b{color:var(--rouge)}
+.lst div.ok b{color:var(--vert)} .lst div.ko b{color:var(--rouge)}
+
+/* ---------- terrain pleine largeur ---------- */
+.carte.large{padding:20px 22px}
+.carte.large .pitch{max-width:1000px;margin:0 auto}
+
+/* ---------- photos ---------- */
+.ph{position:relative;display:inline-block;border-radius:50%;overflow:hidden;flex:none;
+    background:var(--carte-2);border:1px solid var(--bord-clair);vertical-align:middle}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.ph i{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;
+      font-weight:700;font-size:.42em;color:var(--texte-3);letter-spacing:.02em}
+.jt{display:flex;align-items:center;gap:16px}
+td.jn{display:flex;align-items:center;gap:9px}
+td .nu{color:var(--texte-3);font-variant-numeric:tabular-nums;min-width:22px}
+.sc2{color:var(--nous);font-variant-numeric:tabular-nums}

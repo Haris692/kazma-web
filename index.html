@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="fr" dir="ltr">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -7,7 +7,7 @@
 <title>Kazma SC — Statistiques</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,13 +15,16 @@
   <aside class="side">
     <div class="marque">
       <img src="crest.png" alt="" onerror="this.style.display='none'">
-      <div><b>Kazma SC</b><span>Statistiques</span></div>
+      <div><b>Kazma SC</b><span id="t-titre">Statistiques</span></div>
     </div>
-    <div class="grp">Équipe</div>
+    <div class="lang">
+      <b data-l="fr" class="on">FR</b><b data-l="en">EN</b><b data-l="ar">ع</b>
+    </div>
+    <div class="grp" id="t-equipe">Équipe</div>
     <nav class="nav" id="nav-equipe"></nav>
-    <div class="grp">Matchs</div>
+    <div class="grp" id="t-matchs">Matchs</div>
     <nav class="nav" id="nav-matchs"></nav>
-    <div class="grp">Joueurs</div>
+    <div class="grp" id="t-joueurs">Joueurs</div>
     <nav class="nav" id="nav-joueurs"></nav>
     <div class="side-bas" id="pied"></div>
   </aside>
