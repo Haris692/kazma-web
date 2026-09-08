@@ -1,0 +1,118 @@
+/* Kazma SC — application de statistiques.
+   Sombre, barre laterale groupee, contenu en cartes : la grammaire de DataScout,
+   avec les couleurs du blason de Kazma (bleu #0088dd, flamme #ff9911). */
+
+:root{
+  --fond:#0e1319; --fond-2:#131a22; --carte:#171f29; --carte-2:#1c2632;
+  --bord:#243040; --bord-clair:#2f3d4f;
+  --texte:#e8edf3; --texte-2:#9fb0c2; --texte-3:#6d7f92;
+  --kazma:#1e8fd5; --kazma-clair:#4fb3ee; --flamme:#ff9911;
+  --nous:#1e8fd5; --eux:#e07b3c;
+  --vert:#2eb872; --rouge:#e05555;
+  --pelouse:#16202b; --ligne:#2c3a49;
+  --r:10px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{
+  background:var(--fond); color:var(--texte);
+  font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+a{color:inherit;text-decoration:none}
+h1,h2,h3{margin:0;font-weight:700;letter-spacing:-.02em}
+
+/* ---------- ossature ---------- */
+.app{display:grid;grid-template-columns:246px 1fr;min-height:100vh}
+.side{background:var(--fond-2);border-right:1px solid var(--bord);
+      display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.marque{display:flex;align-items:center;gap:11px;padding:20px 18px 16px}
+.marque img{width:38px;height:38px;object-fit:contain;border-radius:7px;background:#fff;padding:3px}
+.marque b{font-size:16px;letter-spacing:-.02em;display:block;line-height:1.15}
+.marque span{font-size:11px;color:var(--texte-3);letter-spacing:.09em;text-transform:uppercase}
+.grp{padding:14px 12px 4px;font-size:10px;letter-spacing:.15em;text-transform:uppercase;
+     color:var(--texte-3);font-weight:600}
+.nav a{display:flex;align-items:center;gap:10px;padding:9px 14px;margin:1px 8px;
+       border-radius:8px;color:var(--texte-2);font-size:14px;font-weight:500}
+.nav a:hover{background:var(--carte);color:var(--texte)}
+.nav a.on{background:var(--carte-2);color:var(--texte);
+          box-shadow:inset 2px 0 0 var(--kazma)}
+.nav a .p{width:7px;height:7px;border-radius:50%;background:var(--bord-clair);flex:none}
+.nav a.on .p{background:var(--kazma)}
+.side-bas{margin-top:auto;padding:14px 16px;border-top:1px solid var(--bord);
+          font-size:11px;color:var(--texte-3);line-height:1.6}
+
+.main{padding:26px 30px 60px;max-width:1400px}
+.entete{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;
+        flex-wrap:wrap;margin-bottom:20px}
+.entete h1{font-size:29px}
+.entete .sous{color:var(--texte-2);font-size:14px;margin-top:5px}
+.maj{font-size:11.5px;color:var(--texte-3)}
+.maj i{display:inline-block;width:7px;height:7px;border-radius:50%;
+       background:var(--vert);margin-right:6px}
+
+/* ---------- briques ---------- */
+.carte{background:var(--carte);border:1px solid var(--bord);border-radius:var(--r);
+       padding:18px 20px;margin-bottom:18px}
+.carte h2{font-size:16px;margin-bottom:2px}
+.carte .lg{font-size:12.5px;color:var(--texte-3);margin-bottom:14px}
+
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:10px;margin-bottom:18px}
+.kpi div{background:var(--carte);border:1px solid var(--bord);border-radius:var(--r);padding:13px 15px}
+.kpi b{display:block;font-size:26px;font-weight:700;letter-spacing:-.03em;
+       font-variant-numeric:tabular-nums;line-height:1.15}
+.kpi span{font-size:11.5px;color:var(--texte-3)}
+.kpi .a b{color:var(--nous)} .kpi .f b{color:var(--flamme)}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:8px 10px;text-align:right;white-space:nowrap;
+      font-variant-numeric:tabular-nums;border-bottom:1px solid var(--bord)}
+th{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--texte-3);
+   font-weight:600;border-bottom:1px solid var(--bord-clair)}
+th.g,td.g{text-align:left}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--carte-2)}
+td.nom{font-weight:600}
+td.num{color:var(--texte-3)}
+.tw{overflow-x:auto}
+
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:1080px){.duo,.trio{grid-template-columns:1fr}}
+@media(max-width:760px){.app{grid-template-columns:1fr}.side{position:static;height:auto}}
+
+/* barres opposees, comme la page Key Statistics du PMSR */
+.cmp{display:grid;grid-template-columns:52px 1fr 160px 1fr 52px;align-items:center;
+     gap:9px;padding:6px 0;border-bottom:1px solid var(--bord)}
+.cmp:last-child{border-bottom:none}
+.cmp .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+.cmp .v.a{color:var(--eux)} .cmp .v.b{text-align:right;color:var(--nous)}
+.cmp .l{text-align:center;font-size:12.5px;color:var(--texte-2)}
+.cmp .bar{height:6px;background:var(--fond-2);border-radius:3px;position:relative;overflow:hidden}
+.cmp .bar i{position:absolute;top:0;bottom:0;display:block;border-radius:3px}
+.cmp .bar i.a{right:0;background:var(--eux)} .cmp .bar i.b{left:0;background:var(--nous)}
+
+.pitch{width:100%;height:auto;display:block}
+.leg{display:flex;gap:8px 18px;flex-wrap:wrap;font-size:12px;color:var(--texte-2);margin-top:10px}
+.leg span{display:flex;align-items:center;gap:7px}
+.leg i{width:11px;height:11px;border-radius:50%;display:block}
+.leg i.o{background:none;border:1.6px solid currentColor}
+
+.liste a{display:grid;grid-template-columns:78px 1fr auto auto;align-items:center;gap:14px;
+         padding:12px 14px;border:1px solid var(--bord);border-radius:var(--r);
+         margin-bottom:8px;background:var(--carte)}
+.liste a:hover{background:var(--carte-2);border-color:var(--bord-clair)}
+.liste .d{font-size:12px;color:var(--texte-3);font-variant-numeric:tabular-nums}
+.liste .o{font-weight:600}
+.liste .lieu{font-size:11px;color:var(--texte-3);margin-left:7px;
+             border:1px solid var(--bord-clair);border-radius:4px;padding:1px 5px}
+.liste .sc{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+.liste .sc.g{color:var(--vert)} .liste .sc.p{color:var(--rouge)} .liste .sc.n{color:var(--texte-2)}
+.liste .plus{font-size:12px;color:var(--texte-3)}
+
+.puce{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;
+      border:1px solid var(--bord-clair);color:var(--texte-2)}
+.note{font-size:12.5px;color:var(--texte-3);line-height:1.65;max-width:78ch}
+.note b{color:var(--texte-2)}
+.vide{text-align:center;padding:70px 20px;color:var(--texte-3)}
+.vide b{display:block;font-size:17px;color:var(--texte-2);margin-bottom:6px}
