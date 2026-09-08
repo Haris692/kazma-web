@@ -6,7 +6,7 @@
    Code couleur unique dans toute l'app : vert = reussi, rouge = rate, gris = neutre.
    Il est porte par la donnee (champ `issue` du dictionnaire), jamais devine ici. */
 
-var IDX = null, CACHE = {}, LANG = localStorage.getItem("kz-lang") || "fr";
+var IDX = null, CACHE = {}, CARTES = {}, LANG = localStorage.getItem("kz-lang") || "fr";
 var L = 105, W = 68, TIERS = 70;
 
 var T = {
@@ -159,7 +159,42 @@ var T = {
                 ar: "الأهداف المسجلة." },
   e_reussite: { fr: "Part des passes réussies. À lire avec le volume : 100 % sur trois passes ne veut rien dire.",
                 en: "Share of completed passes. Read it with the volume: 100 % on three passes means nothing.",
-                ar: "نسبة التمريرات الناجحة. اقرأها مع الحجم: 100 ٪ من ثلاث تمريرات لا تعني شيئًا." }
+                ar: "نسبة التمريرات الناجحة. اقرأها مع الحجم: 100 ٪ من ثلاث تمريرات لا تعني شيئًا." },
+
+  /* --- cartes de la fiche joueur --- */
+  cTirs:      { fr: "Ses tirs",             en: "His shots",          ar: "تسديداته" },
+  cTirsN:     { fr: "Chaque point est l’endroit d’où il a tiré. Le fournisseur ne donne pas le placement du ballon dans la cage.",
+                en: "Each dot is where he shot from. The provider does not supply where the ball went inside the goal.",
+                ar: "كل نقطة هي المكان الذي سدّد منه. مزوّد البيانات لا يوفر موضع الكرة داخل المرمى." },
+  cProg:      { fr: "Ses passes progressives", en: "His progressive passes", ar: "تمريراته التقدمية" },
+  cBallons:   { fr: "Où il gagne et perd le ballon", en: "Where he wins and loses the ball", ar: "أين يكسب ويفقد الكرة" },
+  cZones:     { fr: "Où il touche le ballon", en: "Where he touches the ball", ar: "أين يلمس الكرة" },
+  cZonesN:    { fr: "Part de ses actions par zone du terrain",
+                en: "Share of his actions by area of the pitch",
+                ar: "نسبة تحركاته حسب منطقة الملعب" },
+  cGestes:    { fr: "Réussite geste par geste", en: "Success by type of action", ar: "النجاح حسب نوع الأداء" },
+  cGestesN:   { fr: "Ce qu’il réussit et ce qu’il rate, dans chaque registre",
+                en: "What he completes and what he loses, in each register",
+                ar: "ما ينجح فيه وما يخفق فيه، في كل مجال" },
+  reussies:   { fr: "réussies",             en: "completed",          ar: "ناجحة" },
+  iBut:       { fr: "But",                  en: "Goal",               ar: "هدف" },
+  iCadre:     { fr: "Cadré",                en: "On target",          ar: "على المرمى" },
+  iPoteau:    { fr: "Poteau ou barre",      en: "Post or bar",        ar: "القائم أو العارضة" },
+  iHors:      { fr: "Hors cadre",           en: "Off target",         ar: "خارج المرمى" },
+  lRecup:     { fr: "Récupérations",        en: "Recoveries",         ar: "استخلاصات" },
+  lPertes:    { fr: "Pertes de balle",      en: "Losses",             ar: "كرات مفقودة" },
+
+  g_passes:   { fr: "Passes",               en: "Passes",             ar: "التمريرات" },
+  g_avant:    { fr: "Vers l’avant",         en: "Forward",            ar: "إلى الأمام" },
+  g_prog:     { fr: "Progressives",         en: "Progressive",        ar: "التقدمية" },
+  g_longues:  { fr: "Longues",              en: "Long",               ar: "الطويلة" },
+  g_surface:  { fr: "Dans la surface",      en: "Into the box",       ar: "داخل المنطقة" },
+  g_centres:  { fr: "Centres",              en: "Crosses",            ar: "العرضيات" },
+  g_duels:    { fr: "Duels",                en: "Duels",              ar: "الالتحامات" },
+  g_aeriens:  { fr: "Duels aériens",        en: "Aerial duels",       ar: "الكرات الهوائية" },
+  g_dribbles: { fr: "Dribbles",             en: "Dribbles",           ar: "المراوغات" },
+  g_tacles:   { fr: "Tacles",               en: "Tackles",            ar: "العرقلات" },
+  g_tirs:     { fr: "Tirs",                 en: "Shots",              ar: "التسديدات" }
 };
 
 function t(k) { var e = T[k]; return e ? (e[LANG] || e.fr) : k; }
@@ -569,8 +604,12 @@ function legendeCode() {
 }
 
 function legende(items) {
+  // le 3e element est une classe de marqueur : « anneau » pour le but, qui est
+  // vert comme un tir cadre et doit pourtant se distinguer dans la legende.
   return '<div class="leg">' + items.map(function (i) {
-    return '<span><i style="background:' + i[0] + '"></i>' + esc(i[1]) + '</span>';
+    // color: en plus du fond, pour que currentColor serve aux variantes
+    return '<span><i class="' + (i[2] || "") + '" style="background:' + i[0] + ';color:'
+         + i[0] + ';border-color:' + i[0] + '"></i>' + esc(i[1]) + '</span>';
   }).join("") + '</div>';
 }
 
@@ -715,6 +754,124 @@ function blocProfil(j) {
        + '</div></div></div>';
 }
 
+/* =============================== cartes de la fiche joueur ==================
+   Les chiffres seuls ne disent pas grand-chose : 3 tirs cadres, oui, mais tires
+   d'ou ? Ces cartes reprennent les memes actions et les posent sur le terrain.
+
+   Ce que le fournisseur NE donne PAS : le placement du tir dans la cage. Les
+   seules etiquettes de position du XML sont pos_x et pos_y, qui reperent le
+   point du terrain d'ou part l'action. Impossible donc de dessiner une cage
+   avec les tirs a gauche, a droite ou en lucarne. */
+
+function nuageTirs(tirs) {
+  var COUL = ["var(--rouge)", "var(--flamme)", "var(--vert)", "var(--vert)"];
+  return tirs.slice().sort(function (a, b) { return a[2] - b[2]; }).map(function (p) {
+    var c = COUL[p[2]];
+    if (p[2] === 3)                       // un but : disque plein, cercle autour
+      return point(p[0], p[1], 2.6, c, 1)
+           + '<circle cx="' + p[0] + '" cy="' + (W - p[1]) + '" r="4" fill="none" stroke="'
+           + c + '" stroke-width=".7"/>';
+    return point(p[0], p[1], 2, c, p[2] === 2 ? 1 : 0);
+  }).join("");
+}
+
+function carteTirs(c) {
+  var n = c.tirs.length;
+  if (!n) return "";
+  var cpt = [0, 0, 0, 0];
+  c.tirs.forEach(function (p) { cpt[p[2]]++; });
+  return '<div class="carte"><h2>' + t("cTirs") + '</h2><div class="lg">'
+    + n + " " + t("tirs").toLowerCase() + " · " + t("cTirsN") + '</div>'
+    + terrain(nuageTirs(c.tirs), { tiers: "var(--nous)", alt: t("cTirs") })
+    + legende([["var(--vert)", t("iBut") + " (" + cpt[3] + ")", "anneau"],
+               ["var(--vert)", t("iCadre") + " (" + cpt[2] + ")"],
+               ["var(--flamme)", t("iPoteau") + " (" + cpt[1] + ")"],
+               ["var(--rouge)", t("iHors") + " (" + cpt[0] + ")", "creux"]])
+    + '</div>';
+}
+
+function carteProg(c) {
+  if (!c.prog.length) return "";
+  var ok = c.prog.filter(function (p) { return p[2]; }).length;
+  return '<div class="carte"><h2>' + t("cProg") + '</h2><div class="lg">'
+    + c.prog.length + " · " + ok + " " + t("reussies") + '</div>'
+    + terrain(c.prog.map(function (p) {
+        return point(p[0], p[1], 1.5, p[2] ? "var(--vert)" : "var(--rouge)", 1);
+      }).join(""), { alt: t("cProg") })
+    + legende([["var(--vert)", t("reussie")], ["var(--rouge)", t("ratee")]]) + '</div>';
+}
+
+function carteBallons(c) {
+  if (!c.recup.length && !c.pertes.length) return "";
+  return '<div class="carte"><h2>' + t("cBallons") + '</h2><div class="lg">'
+    + c.recup.length + " " + t("lRecup").toLowerCase() + " · "
+    + c.pertes.length + " " + t("lPertes").toLowerCase() + '</div>'
+    + terrain(c.pertes.map(function (p) { return point(p[0], p[1], 1.5, "var(--rouge)", 1); }).join("")
+            + c.recup.map(function (p) { return point(p[0], p[1], 1.5, "var(--vert)", 1); }).join(""),
+              { alt: t("cBallons") })
+    + legende([["var(--vert)", t("lRecup")], ["var(--rouge)", t("lPertes")]]) + '</div>';
+}
+
+/* Occupation : une grille 6 x 4 plutot qu'un nuage de points. Sur 200 actions le
+   nuage devient une tache ; la grille dit une proportion, et elle ne grossit pas
+   quand les matchs s'accumulent. */
+function carteZones(c) {
+  var z = c.zones || [], tot = z.reduce(function (a, b) { return a + b; }, 0);
+  if (!tot) return "";
+  var CO = 6, LI = 4, lx = L / CO, ly = W / LI, mx = Math.max.apply(null, z), s = "";
+  for (var i = 0; i < z.length; i++) {
+    var col = i % CO, lig = Math.floor(i / CO), v = z[i] / mx;
+    s += '<rect x="' + (col * lx).toFixed(1) + '" y="' + (W - (lig + 1) * ly).toFixed(1)
+       + '" width="' + lx.toFixed(1) + '" height="' + ly.toFixed(1)
+       + '" fill="var(--kazma)" fill-opacity="' + (0.05 + 0.75 * v).toFixed(2) + '"/>';
+    var part = Math.round(100 * z[i] / tot);
+    if (part >= 5)
+      s += '<text x="' + (col * lx + lx / 2).toFixed(1) + '" y="'
+         + (W - (lig + 0.5) * ly + 1.6).toFixed(1) + '" text-anchor="middle" font-size="4"'
+         + ' font-weight="700" fill="#fff" fill-opacity=".92">' + part + '%</text>';
+  }
+  return '<div class="carte"><h2>' + t("cZones") + '</h2><div class="lg">'
+    + tot + " " + t("actions") + " · " + t("cZonesN") + '</div>'
+    + terrain(s, { alt: t("cZones") }) + '</div>';
+}
+
+/* Reussite geste par geste. Chaque paire a ete verifiee : les deux etiquettes
+   sont bien disjointes et couvrent le meme geste, sinon le pourcentage serait
+   faux. « Passes longues » designe les longues REUSSIES, pas le total. */
+var PAIRES = [
+  ["Passes réussies", "Passes non-réussies", "g_passes"],
+  ["Passes vers l'avant réussies", "Passes vers l'avant incomplètes", "g_avant"],
+  ["Passes progressives réussies", "Passes progressives incomplètes", "g_prog"],
+  ["Passes longues", "Passes longues incomplètes", "g_longues"],
+  ["Passes dans la surface de réparation réussies", "Passes dans la surface incomplètes", "g_surface"],
+  ["Centres réussis", "Centres non réussis", "g_centres"],
+  ["Duels gangés", "Duels perdus", "g_duels"],
+  ["Duels aériens gagnés", "Duels aériens non réussis", "g_aeriens"],
+  ["Dribbles réussis", "Dribbles non réussis", "g_dribbles"],
+  ["Tacles réussis", "Tacles non réussies", "g_tacles"],
+  ["Tirs cadrés", "Tirs hors cadre", "g_tirs"]
+];
+
+function gestes(tags) {
+  var l = PAIRES.map(function (p) {
+    return { ok: tags[p[0]] || 0, ko: tags[p[1]] || 0, cle: p[2] };
+  }).filter(function (g) { return g.ok + g.ko > 0; })
+    .sort(function (a, b) { return (b.ok + b.ko) - (a.ok + a.ko); });
+  if (!l.length) return "";
+  return '<div class="carte"><h2>' + t("cGestes") + '</h2><div class="lg">'
+    + t("cGestesN") + '</div><div class="gestes">'
+    + l.map(function (g) {
+        var n = g.ok + g.ko, pc = Math.round(100 * g.ok / n);
+        // sous 5 gestes le pourcentage est du bruit : on l'attenue au lieu de
+        // le cacher, pour que le total reste verifiable.
+        return '<div class="ge' + (n < 5 ? " maigre" : "") + '"><span class="gl">' + esc(t(g.cle)) + '</span>'
+          + '<span class="gb"><i class="ok" style="width:' + pc + '%"></i>'
+          + '<i class="ko" style="width:' + (100 - pc) + '%"></i></span>'
+          + '<span class="gn">' + g.ok + '<i>/' + n + '</i></span>'
+          + '<span class="gp">' + pc + ' %</span></div>';
+      }).join("") + '</div></div>';
+}
+
 function vueJoueur(num) {
   var j = IDX.joueurs.filter(function (x) { return x.numero === num; })[0];
   if (!j) return '<div class="vide"><b>' + t("introuvable") + '</b></div>';
@@ -733,8 +890,15 @@ function vueJoueur(num) {
   var pts = j.matchs.filter(function (m) { return m.x_med != null; }).map(function (m) {
     return point(m.x_med, m.y_med, 2.4, "var(--nous)", 1);
   }).join("");
-  h += '<div class="carte large"><h2>' + t("position") + '</h2><div class="lg">'
+  var carteP = '<div class="carte"><h2>' + t("position") + '</h2><div class="lg">'
      + t("positionN") + '</div>' + terrain(pts, { lignes: 1, alt: j.nom }) + '</div>';
+
+  // les cartes, deux par ligne : petites, et lisibles cote a cote
+  var c = CARTES[num];
+  var blocs = (c ? [carteZones(c), carteTirs(c), carteProg(c), carteBallons(c)] : [])
+              .concat([carteP]).filter(function (b) { return b; });
+  h += '<div class="duo">' + blocs.join("") + '</div>';
+  if (c) h += gestes(j.tags || {});
 
   h += '<div class="carte"><h2>' + t("parMatch") + '</h2><div class="lg">' + t("ouvrirM") + '</div>'
     + '<div class="tw"><table><thead><tr><th class="g">' + t("date") + '</th><th class="g">'
@@ -776,7 +940,14 @@ function rendre() {
     });
   }
   var p = h.match(/^#\/joueur\/(\d+)$/);
-  if (p) { v.innerHTML = vueJoueur(parseInt(p[1], 10)); window.scrollTo(0, 0); return; }
+  if (p) {
+    var num = parseInt(p[1], 10);
+    // les cartes vivent dans un fichier par joueur : on ne le charge qu'ici, et
+    // une absence de fichier n'empeche pas la fiche de s'afficher.
+    return charge("data/joueur_" + num + ".json").then(function (d) { CARTES[num] = d; })
+      .catch(function () {})
+      .then(function () { v.innerHTML = vueJoueur(num); window.scrollTo(0, 0); });
+  }
   if (h === "#/joueurs") { v.innerHTML = vueJoueurs(); window.scrollTo(0, 0); return; }
   v.innerHTML = vueSaison(); window.scrollTo(0, 0);
 }

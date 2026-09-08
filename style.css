@@ -104,6 +104,8 @@ td.num{color:var(--texte-3)}
 .leg span{display:flex;align-items:center;gap:7px}
 .leg i{width:11px;height:11px;border-radius:50%;display:block}
 .leg i.o{background:none;border:1.6px solid currentColor}
+.leg i.creux{background:none!important;border:1.6px solid}
+.leg i.anneau{box-shadow:0 0 0 1.5px var(--carte),0 0 0 3px currentColor}
 
 .liste a{display:grid;grid-template-columns:78px 1fr auto auto;align-items:center;gap:14px;
          padding:12px 14px;border:1px solid var(--bord);border-radius:var(--r);
@@ -169,6 +171,21 @@ h2.sec{font-size:20px;margin:30px 0 3px}
 /* 520 px : le terrain fait 111 unites de large, donc un nom de joueur
    (font-size 3.4) sort a ~16 px. Plus large, la carte ecrase la page ;
    plus etroit, les noms deviennent illisibles. */
+
+/* ---------- reussite geste par geste ---------- */
+.gestes{display:flex;flex-direction:column;gap:2px}
+.ge{display:grid;grid-template-columns:120px minmax(0,1fr) 62px 46px;align-items:center;
+    gap:12px;padding:7px 0;border-bottom:1px solid var(--bord)}
+.ge:last-child{border-bottom:none}
+.gl{font-size:13px;color:var(--texte-2)}
+.gb{display:flex;height:7px;border-radius:4px;overflow:hidden;background:var(--fond-2)}
+.gb i{display:block;height:100%}
+.gb i.ok{background:var(--vert)} .gb i.ko{background:var(--rouge)}
+.gn{font-size:13px;font-weight:600;text-align:end;font-variant-numeric:tabular-nums}
+.gn i{font-style:normal;font-weight:400;color:var(--texte-3);font-size:11.5px}
+.gp{font-size:13px;font-weight:600;text-align:end;font-variant-numeric:tabular-nums;
+    color:var(--texte-2)}
+.ge.maigre{opacity:.55}
 
 /* ---------- tableau triable ---------- */
 .astuce{font-size:11.5px;color:var(--texte-3);margin:0 0 8px}
@@ -282,6 +299,9 @@ td .nu{color:var(--texte-3);font-variant-numeric:tabular-nums;min-width:22px}
   .lst span{font-size:11.5px}
 
   .carte.large .pitch{max-width:none}
+  .ge{grid-template-columns:1fr auto auto;gap:4px 10px}
+  .gl{grid-column:1/-1;font-size:12.5px}
+  .gb{grid-column:1}
   .radar-wrap{grid-template-columns:minmax(0,1fr);gap:12px}
   .radar{max-width:none}
   table{font-size:12.5px}
