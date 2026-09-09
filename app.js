@@ -221,9 +221,7 @@ var T = {
   tousM:      { fr: "Tous les matchs",      en: "All matches",        ar: "كل المباريات" },
   moyM:       { fr: "Moyenne par match",    en: "Average per match",  ar: "المتوسط لكل مباراة" },
   unMatch:    { fr: "Un match…",            en: "One match…",         ar: "مباراة واحدة…" },
-  cartesN:    { fr: "Les chiffres sont des moyennes par match ; les cartes montrent toutes les actions de la saison — un point est une action réelle, on ne peut pas en afficher la moitié.",
-                en: "The figures are per-match averages; the maps show every action of the season — a dot is one real action, half of one cannot be drawn.",
-                ar: "الأرقام متوسطات لكل مباراة؛ أما الخرائط فتعرض كل أحداث الموسم — النقطة حدث حقيقي، ولا يمكن رسم نصفه." },
+  surLesM:    { fr: "Sur les",              en: "Over",               ar: "على مدى" },
   radarN:     { fr: "Chaque axe est déjà ramené à 90 minutes de jeu : le radar est donc identique en moyenne et sur toute la saison.",
                 en: "Every axis is already scaled to 90 minutes played: the radar is therefore the same on average and across the season.",
                 ar: "كل محور معدّل أصلًا إلى 90 دقيقة لعب: لذلك يبقى الرسم نفسه في وضع المتوسط وفي الموسم كاملًا." },
@@ -249,9 +247,6 @@ var T = {
 
 function t(k) { var e = T[k]; return e ? (e[LANG] || e.fr) : k; }
 /* accord en nombre : « 1 tirs » sur la fiche d'un remplacant fait desordre */
-function pl2(n, cle, par) {
-  return par(n) + " " + t(n === 1 && T[cle + "1"] ? cle + "1" : cle).toLowerCase();
-}
 function pl(n, cle) { return n + " " + t(n === 1 && T[cle + "1"] ? cle + "1" : cle).toLowerCase(); }
 function lib(tag) {
   var d = IDX.libelles.tags[tag];
@@ -419,6 +414,8 @@ function arrondi(v) {
   return (r === Math.round(r)) ? String(Math.round(r)) : r.toFixed(1).replace(".", virgule());
 }
 function virgule() { return LANG === "fr" ? "," : "."; }
+/* majuscule en tete : « sur ce match » sert aussi en milieu de phrase */
+function cap(x) { return x.charAt(0).toUpperCase() + x.slice(1); }
 
 function vueSaison() {
   var s = IDX.saison, n = IDX.matchs.length;
@@ -875,13 +872,13 @@ function nuageTirs(tirs) {
   }).join("");
 }
 
-function carteTirs(c, par) {
+function carteTirs(c, portee) {
   var n = c.tirs.length;
   if (!n) return "";
   var cpt = [0, 0, 0, 0];
   c.tirs.forEach(function (p) { cpt[p[2]]++; });
   return '<div class="carte"><h2>' + t("cTirs") + '</h2><div class="lg">'
-    + pl2(n, "tirs", par) + " · " + t("cTirsN") + '</div>'
+    + portee + pl(n, "tirs") + " · " + t("cTirsN") + '</div>'
     + terrain(nuageTirs(c.tirs), { tiers: "var(--nous)", alt: t("cTirs") })
     + legende([["var(--vert)", t("iBut") + " (" + cpt[3] + ")", "anneau"],
                ["var(--vert)", t("iCadre") + " (" + cpt[2] + ")"],
@@ -890,21 +887,21 @@ function carteTirs(c, par) {
     + '</div>';
 }
 
-function carteProg(c, par) {
+function carteProg(c, portee) {
   if (!c.prog.length) return "";
   var ok = c.prog.filter(function (p) { return p[2]; }).length;
   return '<div class="carte"><h2>' + t("cProg") + '</h2><div class="lg">'
-    + par(c.prog.length) + " · " + pl2(ok, "reussies", par) + '</div>'
+    + portee + c.prog.length + " · " + pl(ok, "reussies") + '</div>'
     + terrain(c.prog.map(function (p) {
         return point(p[0], p[1], 1.5, p[2] ? "var(--vert)" : "var(--rouge)", 1);
       }).join(""), { alt: t("cProg") })
     + legende([["var(--vert)", t("reussie")], ["var(--rouge)", t("ratee")]]) + '</div>';
 }
 
-function carteBallons(c, par) {
+function carteBallons(c, portee) {
   if (!c.recup.length && !c.pertes.length) return "";
   return '<div class="carte"><h2>' + t("cBallons") + '</h2><div class="lg">'
-    + pl2(c.recup.length, "lRecup", par) + " · " + pl2(c.pertes.length, "lPertes", par) + '</div>'
+    + portee + pl(c.recup.length, "lRecup") + " · " + pl(c.pertes.length, "lPertes") + '</div>'
     + terrain(c.pertes.map(function (p) { return point(p[0], p[1], 1.5, "var(--rouge)", 1); }).join("")
             + c.recup.map(function (p) { return point(p[0], p[1], 1.5, "var(--vert)", 1); }).join(""),
               { alt: t("cBallons") })
@@ -914,7 +911,7 @@ function carteBallons(c, par) {
 /* Occupation : une grille 6 x 4 plutot qu'un nuage de points. Sur 200 actions le
    nuage devient une tache ; la grille dit une proportion, et elle ne grossit pas
    quand les matchs s'accumulent. */
-function carteZones(c, par) {
+function carteZones(c, portee) {
   var z = c.zones || [], tot = z.reduce(function (a, b) { return a + b; }, 0);
   if (!tot) return "";
   var CO = 6, LI = 4, lx = L / CO, ly = W / LI, mx = Math.max.apply(null, z), s = "";
@@ -930,7 +927,7 @@ function carteZones(c, par) {
          + ' font-weight="700" fill="#fff" fill-opacity=".92">' + part + '%</text>';
   }
   return '<div class="carte"><h2>' + t("cZones") + '</h2><div class="lg">'
-    + pl2(tot, "actions", par) + " · " + t("cZonesN") + '</div>'
+    + portee + pl(tot, "actions") + " · " + t("cZonesN") + '</div>'
     + terrain(s, { alt: t("cZones") }) + '</div>';
 }
 
@@ -1042,14 +1039,17 @@ function vueJoueur(num) {
       recup:  c.recup.filter(quand),  pertes: c.pertes.filter(quand),
       zones:  mm ? (c.zones_m || {})[sel] : c.zones
     };
-    blocs = [carteZones(cf, par), carteTirs(cf, par), carteProg(cf, par),
-             carteBallons(cf, par)];
+    // Une carte montre des actions reelles, pas une moyenne : on ne dessine pas
+    // une demi-passe. Son compteur donne donc toujours le TOTAL de ce qui est
+    // affiche, et la portee est annoncee en tete du sous-titre.
+    var portee = cap(mm ? t("surCeMatch")
+                        : t("surLesM") + " " + j.matchs.length + " " + t("matchs").toLowerCase())
+               + " · ";
+    blocs = [carteZones(cf, portee), carteTirs(cf, portee), carteProg(cf, portee),
+             carteBallons(cf, portee)];
   }
   blocs = blocs.concat([carteP]).filter(function (b) { return b; });
-  // Les chiffres se moyennent, pas les dessins : un point est une action reelle,
-  // on ne peut pas en afficher la moitie. Dit une fois, au-dessus des cartes.
-  h += (nm > 1 ? '<div class="astuce">' + t("cartesN") + '</div>' : "")
-     + '<div class="duo">' + blocs.join("") + '</div>';
+  h += '<div class="duo">' + blocs.join("") + '</div>';
 
   var tags = mm ? ((c && c.tags_m) ? c.tags_m[sel] : null) : j.tags;
   h += gestes(tags || {}, par);
