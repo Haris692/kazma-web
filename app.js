@@ -105,11 +105,32 @@ var T = {
   ax_duel:        { fr: "Duels",            en: "Duels",             ar: "الالتحامات" },
   ax_recuperation:{ fr: "Récupération",     en: "Ball recovery",     ar: "استخلاص الكرة" },
 
-  p_gardien:   { fr: "Gardien",     en: "Goalkeeper", ar: "حارس مرمى" },
-  p_defense:   { fr: "Défenseur",   en: "Defender",   ar: "مدافع" },
-  p_milieu:    { fr: "Milieu",      en: "Midfielder", ar: "لاعب وسط" },
-  p_ailier:    { fr: "Ailier",      en: "Winger",     ar: "جناح" },
-  p_attaquant: { fr: "Attaquant",   en: "Forward",    ar: "مهاجم" },
+  ax_avant:       { fr: "Vers l’avant",     en: "Forward passing",   ar: "التمرير للأمام" },
+  ax_longue:      { fr: "Jeu long",         en: "Long passing",      ar: "التمرير الطويل" },
+  ax_centre:      { fr: "Centres",          en: "Crossing",          ar: "العرضيات" },
+  ax_surface:     { fr: "Dans la surface",  en: "Into the box",      ar: "داخل المنطقة" },
+  ax_aerien:      { fr: "Jeu aérien",       en: "Aerial duels",      ar: "الكرات الهوائية" },
+  ax_tacle:       { fr: "Tacles",           en: "Tackling",          ar: "العرقلات" },
+  ax_recup_haute: { fr: "Récupération haute", en: "High recoveries", ar: "الاستخلاص العالي" },
+  ax_t3:          { fr: "Dernier tiers",    en: "Final third",       ar: "الثلث الأخير" },
+
+  p_LCB:  { fr: "Défenseur central",  en: "Centre-back",        ar: "قلب دفاع" },
+  p_RCB:  { fr: "Défenseur central",  en: "Centre-back",        ar: "قلب دفاع" },
+  p_LB:   { fr: "Latéral gauche",     en: "Left-back",          ar: "ظهير أيسر" },
+  p_RB:   { fr: "Latéral droit",      en: "Right-back",         ar: "ظهير أيمن" },
+  p_LCDM: { fr: "Milieu défensif",    en: "Defensive midfielder", ar: "محور دفاعي" },
+  p_RCDM: { fr: "Milieu défensif",    en: "Defensive midfielder", ar: "محور دفاعي" },
+  p_RCM:  { fr: "Milieu central",     en: "Central midfielder", ar: "وسط ملعب" },
+  p_CAM:  { fr: "Milieu offensif",    en: "Attacking midfielder", ar: "صانع ألعاب" },
+  p_LCAM: { fr: "Milieu offensif",    en: "Attacking midfielder", ar: "صانع ألعاب" },
+  p_RCAM: { fr: "Milieu offensif",    en: "Attacking midfielder", ar: "صانع ألعاب" },
+  p_LAM:  { fr: "Ailier gauche",      en: "Left winger",        ar: "جناح أيسر" },
+  p_RAM:  { fr: "Ailier droit",       en: "Right winger",       ar: "جناح أيمن" },
+  p_CF:   { fr: "Attaquant",          en: "Forward",            ar: "مهاجم" },
+
+  axesPoste:  { fr: "Axes choisis pour le poste",
+                en: "Axes chosen for the position",
+                ar: "المحاور المختارة حسب المركز" },
 
   /* --- explications des colonnes, au survol de l'en-tete --- */
   triAide:    { fr: "Cliquez sur un titre de colonne pour trier",
@@ -705,7 +726,9 @@ function reseauSvg(d, liens, seuil, titre) {
    ecrite a cote de chaque axe, parce qu'un rang sur douze joueurs ne dit pas
    la meme chose qu'un rang sur toute une ligue. */
 function radarSvg(p) {
-  var A = p.axes, n = A.length, CX = 210, CY = 190, R = 108;
+  // 470 de large et non 420 : « Récupération haute » et « Dans la surface »
+  // debordaient du cadre et se faisaient rogner.
+  var A = p.axes, n = A.length, CX = 235, CY = 190, R = 108;
   var ang = function (i) { return (i / n) * 2 * Math.PI - Math.PI / 2; };
   var pol = function (i, r) {
     return [CX + Math.cos(ang(i)) * r, CY + Math.sin(ang(i)) * r];
@@ -750,7 +773,7 @@ function radarSvg(p) {
        + '<tspan x="' + e[0].toFixed(1) + '" dy="13" font-size="11" font-weight="400" '
        + 'fill="var(--texte-3)">' + val + ' · ' + A[m].rang + '/' + A[m].sur + '</tspan></text>';
   }
-  return '<svg class="radar" viewBox="0 0 420 380" role="img" aria-label="'
+  return '<svg class="radar" viewBox="0 0 470 380" role="img" aria-label="'
        + esc(t("profil")) + '">' + g + '</svg>';
 }
 
@@ -759,7 +782,8 @@ function blocProfil(p, surUnMatch) {
   var poste = p.poste ? '<span class="puce">' + esc(t("p_" + p.poste)) + '</span> · ' : "";
   var tete = '<h2>' + t("profil") + '</h2><div class="lg">' + poste + p.minutes + " "
            + t("minutes") + " "
-           + (surUnMatch ? t("minutesM") : t("minutesN")) + '</div>';
+           + (surUnMatch ? t("minutesM") : t("minutesN"))
+           + (p.ligne ? ' · ' + t("axesPoste") : '') + '</div>';
 
   if (!p.reference) {
     return '<div class="carte">' + tete + '<div class="vide court"><b>' + t("pasAssez")
