@@ -198,6 +198,12 @@ var T = {
 
   /* --- filtre par match sur la fiche joueur --- */
   tousM:      { fr: "Tous les matchs",      en: "All matches",        ar: "كل المباريات" },
+  sansJoueurs:{ fr: "Pas de détail par joueur pour ce match",
+                en: "No player-level detail for this match",
+                ar: "لا تتوفر تفاصيل فردية لهذه المباراة" },
+  sansJoueursN:{ fr: "Le fournisseur a livré ce match au niveau équipe seulement. Les statistiques collectives ci-dessus sont complètes ; le schéma de passes et les fiches joueurs demandent le fichier par joueur.",
+                en: "The provider supplied this match at team level only. The team statistics above are complete; the passing structure and player pages require the per-player file.",
+                ar: "زوّد المزوّد هذه المباراة على مستوى الفريق فقط. إحصائيات الفريق أعلاه كاملة؛ أما شبكة التمريرات وصفحات اللاعبين فتحتاج ملف اللاعبين." },
   minutesM:   { fr: "estimées sur ce match", en: "estimated for this match", ar: "تقديرية لهذه المباراة" },
   surCeMatch: { fr: "sur ce match",         en: "in this match",      ar: "في هذه المباراة" },
   tirs1:      { fr: "tir",                  en: "attempt",            ar: "تسديدة" },
@@ -584,10 +590,15 @@ function vueMatch(d) {
           + legende([[coul, t("reussie")], ["var(--rouge)", t("ratee")]]) + '</div>';
       }).join("") + '</div>';
 
-  /* les reseaux prennent toute la largeur : sinon les noms sont illisibles */
-  h += '<h2 class="sec">' + t("schema") + '</h2>'
-     + reseauSvg(d, d.reseau, 4, t("toutes"))
-     + reseauSvg(d, d.reseau_prog, 2, t("progSeul"));
+  /* les reseaux prennent toute la largeur : sinon les noms sont illisibles.
+     Sans niveau joueur dans l'export, il n'y a ni reseau ni tableau : on le dit
+     plutot que d'afficher un terrain vide. */
+  var avecJoueurs = (d.joueurs || []).length > 0;
+  if (avecJoueurs) {
+    h += '<h2 class="sec">' + t("schema") + '</h2>'
+       + reseauSvg(d, d.reseau, 4, t("toutes"))
+       + reseauSvg(d, d.reseau_prog, 2, t("progSeul"));
+  }
 
   h += mk(t("tiersT"), function (e, coul) {
     var s = d.equipes[e], q = d.tiers[e] || [];
@@ -599,8 +610,14 @@ function vueMatch(d) {
       + legende([["var(--vert)", t("reussie")], ["var(--rouge)", t("ratee")]]) + '</div>';
   });
 
-  h += '<div class="carte"><h2>' + t("joueurs") + '</h2><div class="lg">' + esc(IDX.equipe)
-     + '</div>' + tableauJoueurs(d.joueurs, 'match') + '</div>';
+  if (avecJoueurs) {
+    h += '<div class="carte"><h2>' + t("joueurs") + '</h2><div class="lg">' + esc(IDX.equipe)
+       + '</div>' + tableauJoueurs(d.joueurs, 'match') + '</div>';
+  } else {
+    h += '<div class="carte"><h2>' + t("joueurs") + '</h2><div class="vide court"><b>'
+       + t("sansJoueurs") + '</b>' + t("sansJoueursN") + '</div></div>';
+    return h;
+  }
 
   var cv = Object.keys(d.couverture).map(function (k) { return d.couverture[k]; });
   h += '<div class="carte"><h2>' + t("methode") + '</h2><div class="note">'
