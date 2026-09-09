@@ -6,7 +6,7 @@
    Code couleur unique dans toute l'app : vert = reussi, rouge = rate, gris = neutre.
    Il est porte par la donnee (champ `issue` du dictionnaire), jamais devine ici. */
 
-var IDX = null, CACHE = {}, CARTES = {}, SEL = {}, LANG = localStorage.getItem("kz-lang") || "fr";
+var IDX = null, CACHE = {}, CARTES = {}, SEL = {}, CMP = {}, LANG = localStorage.getItem("kz-lang") || "fr";
 var L = 105, W = 68, TIERS = 70;
 
 var T = {
@@ -51,6 +51,10 @@ var T = {
   but:        { fr: "but",                 en: "goal",               ar: "هدف" },
   methode:    { fr: "Méthode",             en: "Method",             ar: "المنهجية" },
   position:   { fr: "Position",            en: "Position",           ar: "المركز" },
+  positionN2: { fr: "Position médiane de chaque joueur sur la période",
+                en: "Median position of every player over the period",
+                ar: "الموقع الوسيط لكل لاعب خلال الفترة" },
+  coequipiers:{ fr: "coéquipiers",           en: "team-mates",         ar: "زملاء الفريق" },
   positionN:  { fr: "Position médiane de ses actions, un point par match",
                en: "Median position of his actions, one dot per match",
                ar: "الموقع الوسيط لتحركاته، نقطة لكل مباراة" },
@@ -221,6 +225,9 @@ var T = {
   tousM:      { fr: "Tous les matchs",      en: "All matches",        ar: "كل المباريات" },
   moyM:       { fr: "Moyenne par match",    en: "Average per match",  ar: "المتوسط لكل مباراة" },
   unMatch:    { fr: "Un match…",            en: "One match…",         ar: "مباراة واحدة…" },
+  comparer:   { fr: "Comparer à",           en: "Compare with",       ar: "قارن مع" },
+  aucun:      { fr: "personne",             en: "nobody",             ar: "لا أحد" },
+  faceAface:  { fr: "Face à face",          en: "Head to head",       ar: "مواجهة مباشرة" },
   surLesM:    { fr: "Sur les",              en: "Over",               ar: "على مدى" },
   radarN:     { fr: "Chaque axe est déjà ramené à 90 minutes de jeu : le radar est donc identique en moyenne et sur toute la saison.",
                 en: "Every axis is already scaled to 90 minutes played: the radar is therefore the same on average and across the season.",
@@ -564,6 +571,18 @@ document.addEventListener("keydown", function (ev) { if (ev.key === "Escape") bu
 /* Tri et ouverture d'une fiche : ecouteurs delegues plutot que des attributs
    onclick, qui obligent a imbriquer des guillemets dans du HTML dans du JS. */
 document.addEventListener("change", function (ev) {
+  var cj = ev.target.closest && ev.target.closest("select.choixJ");
+  if (cj) {
+    var nc = parseInt(cj.getAttribute("data-cj"), 10);
+    CMP[nc] = cj.value ? parseInt(cj.value, 10) : null;
+    // le compare a besoin de ses propres cartes si un match est selectionne
+    var suite = CMP[nc] ? charge("data/joueur_" + CMP[nc] + ".json")
+                            .then(function (d) { CARTES[CMP[nc]] = d; })
+                            .catch(function () {})
+                        : Promise.resolve();
+    suite.then(function () { $("#vue").innerHTML = vueJoueur(nc); });
+    return;
+  }
   var sl = ev.target.closest && ev.target.closest("select.choixM");
   if (!sl) return;
   var nj = parseInt(sl.getAttribute("data-mj"), 10);
@@ -650,7 +669,7 @@ function vueMatch(d) {
   var avecJoueurs = (d.joueurs || []).length > 0;
   if (avecJoueurs) {
     h += '<h2 class="sec">' + t("schema") + '</h2>'
-       + reseauSvg(d, d.reseau, 4, t("toutes"))
+       + reseauSvg(d, d.reseau, 6, t("toutes"))
        + reseauSvg(d, d.reseau_prog, 2, t("progSeul"));
   }
 
@@ -758,7 +777,13 @@ function reseauSvg(d, liens, seuil, titre) {
    rentre vers le centre un point faible. La valeur brute pour 90 minutes est
    ecrite a cote de chaque axe, parce qu'un rang sur douze joueurs ne dit pas
    la meme chose qu'un rang sur toute une ligue. */
-function radarSvg(p) {
+/* Une valeur d'axe se lit toujours pareil : pourcentage pour la precision,
+   nombre a la virgule ailleurs. */
+function axeVal(a) {
+  return a.cle === "precision" ? Math.round(a.valeur) + " %" : arrondi(a.valeur);
+}
+
+function radarSvg(p, p2) {
   // 470 de large et non 420 : « Récupération haute » et « Dans la surface »
   // debordaient du cadre et se faisaient rogner.
   var A = p.axes, n = A.length, CX = 235, CY = 190, R = 108;
@@ -794,23 +819,38 @@ function radarSvg(p) {
     som += '<circle cx="' + q[0].toFixed(1) + '" cy="' + q[1].toFixed(1) + '" r="4" fill="' + c
          + '" stroke="var(--carte)" stroke-width="1.5"/>';
   }
-  g += '<polygon points="' + pts.join(" ") + '" fill="var(--kazma)" fill-opacity=".26" '
+  // Le compare passe DERRIERE et sans remplissage : deux surfaces pleines l'une
+  // sur l'autre ne se lisent plus.
+  if (p2) {
+    var q2 = [];
+    for (var z = 0; z < n; z++) {
+      var r2_ = R * Math.max(p2.axes[z].centile, 2) / 100, w = pol(z, r2_);
+      q2.push(w[0].toFixed(1) + "," + w[1].toFixed(1));
+    }
+    g += '<polygon points="' + q2.join(" ") + '" fill="var(--flamme)" fill-opacity=".10" '
+       + 'stroke="var(--flamme)" stroke-width="1.8" stroke-dasharray="5 3" '
+       + 'stroke-linejoin="round"/>';
+  }
+  g += '<polygon points="' + pts.join(" ") + '" fill="var(--kazma)" fill-opacity="'
+     + (p2 ? ".16" : ".26") + '" '
      + 'stroke="var(--kazma-clair)" stroke-width="2" stroke-linejoin="round"/>' + som;
 
   for (var m = 0; m < n; m++) {
     var e = pol(m, R + 24), co = Math.cos(ang(m));
     var anc = co > .3 ? "start" : (co < -.3 ? "end" : "middle");
-    var val = A[m].cle === "precision" ? Math.round(A[m].valeur) + " %" : A[m].valeur;
+    var val = axeVal(A[m]);
+    if (p2) val += " · " + axeVal(p2.axes[m]);
     g += '<text x="' + e[0].toFixed(1) + '" y="' + e[1].toFixed(1) + '" text-anchor="' + anc
        + '" font-size="11.5" fill="var(--texte-2)" font-weight="600">' + esc(t("ax_" + A[m].cle))
        + '<tspan x="' + e[0].toFixed(1) + '" dy="13" font-size="11" font-weight="400" '
-       + 'fill="var(--texte-3)">' + val + ' · ' + A[m].rang + '/' + A[m].sur + '</tspan></text>';
+       + 'fill="var(--texte-3)">' + val + (p2 ? "" : ' · ' + A[m].rang + '/' + A[m].sur)
+       + '</tspan></text>';
   }
   return '<svg class="radar" viewBox="0 0 470 380" role="img" aria-label="'
        + esc(t("profil")) + '">' + g + '</svg>';
 }
 
-function blocProfil(p, surUnMatch) {
+function blocProfil(p, surUnMatch, num, p2, nom1, nom2, choix) {
   if (!p) return "";
   var poste = p.poste ? '<span class="puce">' + esc(t("p_" + p.poste)) + '</span> · ' : "";
   var tete = '<h2>' + t("profil") + '</h2><div class="lg">' + poste + p.minutes + " "
@@ -839,15 +879,38 @@ function blocProfil(p, surUnMatch) {
                       + liste(faibles, "ko") + '</div>' : "")
     : '<div class="fw"><span class="fw-t">' + t("equilibre") + '</span></div>';
 
-  return '<div class="carte">' + tete
-       + '<div class="radar-wrap">' + radarSvg(p)
-       + '<div class="radar-cote">' + verdict
-       + '<div class="lst mini"><div><b>' + p.hors_axe.pct_duels + ' %</b><span>'
-       + t("pctDuels") + '</span></div><div><b>' + p.hors_axe.pertes + '</b><span>'
-       + t("pertes90") + '</span></div></div>'
+  // Comparaison : le panneau lateral passe du verdict a un face-a-face axe par
+  // axe. Le rang disparait alors des axes, il n'a plus de sens a deux.
+  var cote = verdict;
+  if (p2) {
+    cote = '<div class="fw"><span class="fw-t">' + t("faceAface") + '</span></div>'
+      + '<table class="vs"><tbody>'
+      + p.axes.map(function (a, i) {
+          var b_ = p2.axes[i], m = Math.max(a.valeur, b_.valeur) || 1;
+          return '<tr><td class="v1">' + axeVal(a) + '</td>'
+            + '<td class="b"><i class="g" style="width:' + (100 * a.valeur / m).toFixed(0)
+            + '%"></i></td>'
+            + '<td class="ax">' + esc(t("ax_" + a.cle)) + '</td>'
+            + '<td class="b"><i class="d" style="width:' + (100 * b_.valeur / m).toFixed(0)
+            + '%"></i></td>'
+            + '<td class="v2">' + axeVal(b_) + '</td></tr>';
+        }).join("") + '</tbody></table>';
+  }
+
+  return '<div class="carte">' + tete + (choix || "")
+       + '<div class="radar-wrap">' + radarSvg(p, p2)
+       + '<div class="radar-cote">'
+       + (p2 ? '<div class="leg"><span><i style="background:var(--kazma)"></i>'
+               + esc(nom1) + '</span><span><i style="background:var(--flamme)"></i>'
+               + esc(nom2) + '</span></div>' : "")
+       + cote
+       + (p2 ? "" :
+          '<div class="lst mini"><div><b>' + p.hors_axe.pct_duels + ' %</b><span>'
+          + t("pctDuels") + '</span></div><div><b>' + p.hors_axe.pertes + '</b><span>'
+          + t("pertes90") + '</span></div></div>')
        + '<div class="radar-note"><i></i>' + t("mediane") + ' · ' + p.axes[0].sur + ' '
        + t("joueurs").toLowerCase() + (surUnMatch ? ' · ' + t("surCeMatch") : '') + '</div>'
-       + (surUnMatch ? '' : '<div class="radar-note pt">' + t("radarN") + '</div>')
+       + (surUnMatch || p2 ? '' : '<div class="radar-note pt">' + t("radarN") + '</div>')
        + '</div></div></div>';
 }
 
@@ -1025,12 +1088,76 @@ function vueJoueur(num) {
   // sont deja des taux pour 90 minutes, c'est-a-dire par match complet joue.
   // Ramener un radar a des totaux de saison le transformerait en classement du
   // temps de jeu.
-  h += blocProfil(prof, !!mm);
+  /* Comparaison : uniquement entre joueurs de la MEME ligne. Les axes changent
+     d'un poste a l'autre ; superposer un ailier et un defenseur central
+     tracerait deux formes qui ne parlent pas de la meme chose. */
+  var tousP = (IDX.radars && IDX.radars.joueurs) || {};
+  var nomDe = function (nu) {
+    var y = IDX.joueurs.filter(function (z) { return z.numero === nu; })[0];
+    return y ? court(y.nom) : String(nu);
+  };
+  var candidats = prof && prof.ligne ? IDX.joueurs.filter(function (x) {
+    var pr = tousP[String(x.numero)];
+    return x.numero !== num && pr && pr.reference && pr.ligne === prof.ligne;
+  }) : [];
+  var vs = CMP[num];
+  if (vs && !candidats.some(function (x) { return x.numero === vs; })) vs = null;
+  var pvs = vs ? (mm ? (CARTES[vs] && CARTES[vs].radar_m ? CARTES[vs].radar_m[sel] : null)
+                     : tousP[String(vs)]) : null;
+  if (pvs && !pvs.reference) pvs = null;
 
-  var pts = (mm ? [mm] : j.matchs).filter(function (m) { return m.x_med != null; })
-    .map(function (m) { return point(m.x_med, m.y_med, 2.4, "var(--nous)", 1); }).join("");
+  var choix = candidats.length
+    ? '<div class="cmpj"><span>' + t("comparer") + '</span>'
+      + '<select class="choixJ" data-cj="' + num + '"><option value="">' + t("aucun")
+      + '</option>' + candidats.map(function (x) {
+          return '<option value="' + x.numero + '"' + (vs === x.numero ? " selected" : "")
+               + '>' + esc(x.nom) + '</option>';
+        }).join("") + '</select></div>'
+    : "";
+  h += blocProfil(prof, !!mm, num, pvs, court(j.nom), vs ? nomDe(vs) : "", choix);
+
+  /* Toute l'equipe sur le meme terrain, le joueur ouvert en surbrillance : une
+     position mediane ne dit rien seule, elle ne parle que par rapport aux
+     autres. Les coequipiers restent discrets pour ne pas voler l'attention. */
+  var posDe = function (x) {
+    if (!mm) return [x.x_med, x.y_med];
+    var e = (x.matchs || []).filter(function (u) { return u.match_id === sel; })[0];
+    return e ? [e.x_med, e.y_med] : [null, null];
+  };
+  // On ne garde que les joueurs ayant assez joue : la mediane d'un remplacant
+  // entre dix minutes ne situe rien et encombre le terrain. Le joueur ouvert y
+  // figure toujours, meme s'il n'atteint pas le seuil.
+  var R_ = (IDX.radars && IDX.radars.joueurs) || {};
+  var retenus = IDX.joueurs.filter(function (x) {
+    var pr = R_[String(x.numero)];
+    return x.numero === num || (pr && pr.reference);
+  }).map(function (x) { return { j: x, q: posDe(x) }; })
+    .filter(function (e) { return e.q[0] != null; });
+
+  // etiquettes : sous le point, ou au-dessus si un voisin occupe deja la place
+  var pris = [], autres = "", moi = "";
+  retenus.sort(function (a, b) { return a.q[1] - b.q[1]; }).forEach(function (e) {
+    var x = e.j, cx_ = e.q[0], cy = W - e.q[1], sien = x.numero === num;
+    var y = cy + (sien ? 7.4 : 5.2), haut = false;
+    for (var i = 0; i < pris.length; i++)
+      if (Math.abs(pris[i][0] - cx_) < 11 && Math.abs(pris[i][1] - y) < 4.4) haut = true;
+    if (haut) y = cy - (sien ? 4.8 : 3.2);
+    pris.push([cx_, y]);
+    if (sien) {
+      moi = point(cx_, e.q[1], 3.2, "var(--nous)", 1)
+          + '<text x="' + cx_ + '" y="' + y.toFixed(1) + '" text-anchor="middle" '
+          + 'font-size="3.6" font-weight="700" fill="var(--texte)">' + esc(court(x.nom))
+          + '</text>';
+    } else {
+      autres += point(cx_, e.q[1], 1.9, "var(--bord-clair)", 1)
+          + '<text x="' + cx_ + '" y="' + y.toFixed(1) + '" text-anchor="middle" '
+          + 'font-size="2.9" fill="var(--texte-3)">' + esc(court(x.nom)) + '</text>';
+    }
+  });
   var carteP = '<div class="carte"><h2>' + t("position") + '</h2><div class="lg">'
-     + t("positionN") + '</div>' + terrain(pts, { lignes: 1, alt: j.nom }) + '</div>';
+     + t("positionN2") + '</div>' + terrain(autres + moi, { lignes: 1, alt: j.nom })
+     + legende([["var(--nous)", esc(court(j.nom))], ["var(--bord-clair)", t("coequipiers")]])
+     + '</div>';
 
   var blocs = [];
   if (c) {
