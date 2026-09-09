@@ -259,6 +259,7 @@ html[dir="rtl"] th.tri i{margin-left:0;margin-right:4px}
 .lst.mini b{font-size:16px;white-space:nowrap}
 .radar-note{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--texte-3)}
 .radar-note i{width:22px;height:0;border-top:1.4px dashed var(--texte-3);display:block;flex:none}
+.radar-note.pt{align-items:flex-start;line-height:1.5;opacity:.85}
 .carte .vide.court{padding:22px 10px 6px;max-width:66ch;margin:0 auto}
 
 /* ---------- photos ---------- */

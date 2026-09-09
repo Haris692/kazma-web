@@ -221,6 +221,12 @@ var T = {
   tousM:      { fr: "Tous les matchs",      en: "All matches",        ar: "كل المباريات" },
   moyM:       { fr: "Moyenne par match",    en: "Average per match",  ar: "المتوسط لكل مباراة" },
   unMatch:    { fr: "Un match…",            en: "One match…",         ar: "مباراة واحدة…" },
+  cartesN:    { fr: "Les chiffres sont des moyennes par match ; les cartes montrent toutes les actions de la saison — un point est une action réelle, on ne peut pas en afficher la moitié.",
+                en: "The figures are per-match averages; the maps show every action of the season — a dot is one real action, half of one cannot be drawn.",
+                ar: "الأرقام متوسطات لكل مباراة؛ أما الخرائط فتعرض كل أحداث الموسم — النقطة حدث حقيقي، ولا يمكن رسم نصفه." },
+  radarN:     { fr: "Chaque axe est déjà ramené à 90 minutes de jeu : le radar est donc identique en moyenne et sur toute la saison.",
+                en: "Every axis is already scaled to 90 minutes played: the radar is therefore the same on average and across the season.",
+                ar: "كل محور معدّل أصلًا إلى 90 دقيقة لعب: لذلك يبقى الرسم نفسه في وضع المتوسط وفي الموسم كاملًا." },
   totaux:     { fr: "Totaux de la saison",  en: "Season totals",      ar: "مجاميع الموسم" },
   ceMatch:    { fr: "Sur ce match",         en: "In this match",      ar: "في هذه المباراة" },
   sansJoueurs:{ fr: "Pas de détail par joueur pour ce match",
@@ -844,6 +850,7 @@ function blocProfil(p, surUnMatch) {
        + t("pertes90") + '</span></div></div>'
        + '<div class="radar-note"><i></i>' + t("mediane") + ' · ' + p.axes[0].sur + ' '
        + t("joueurs").toLowerCase() + (surUnMatch ? ' · ' + t("surCeMatch") : '') + '</div>'
+       + (surUnMatch ? '' : '<div class="radar-note pt">' + t("radarN") + '</div>')
        + '</div></div></div>';
 }
 
@@ -1039,7 +1046,10 @@ function vueJoueur(num) {
              carteBallons(cf, par)];
   }
   blocs = blocs.concat([carteP]).filter(function (b) { return b; });
-  h += '<div class="duo">' + blocs.join("") + '</div>';
+  // Les chiffres se moyennent, pas les dessins : un point est une action reelle,
+  // on ne peut pas en afficher la moitie. Dit une fois, au-dessus des cartes.
+  h += (nm > 1 ? '<div class="astuce">' + t("cartesN") + '</div>' : "")
+     + '<div class="duo">' + blocs.join("") + '</div>';
 
   var tags = mm ? ((c && c.tags_m) ? c.tags_m[sel] : null) : j.tags;
   h += gestes(tags || {}, par);
