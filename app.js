@@ -219,6 +219,9 @@ var T = {
 
   /* --- filtre par match sur la fiche joueur --- */
   tousM:      { fr: "Tous les matchs",      en: "All matches",        ar: "كل المباريات" },
+  moyM:       { fr: "Moyenne par match",    en: "Average per match",  ar: "المتوسط لكل مباراة" },
+  totaux:     { fr: "Totaux de la saison",  en: "Season totals",      ar: "مجاميع الموسم" },
+  ceMatch:    { fr: "Sur ce match",         en: "In this match",      ar: "في هذه المباراة" },
   sansJoueurs:{ fr: "Pas de détail par joueur pour ce match",
                 en: "No player-level detail for this match",
                 ar: "لا تتوفر تفاصيل فردية لهذه المباراة" },
@@ -385,11 +388,25 @@ function nav() {
 }
 
 /* ---------------------------------------------------------------- vues */
-function kpis(arr) {
-  return '<div class="kpi">' + arr.map(function (k) {
-    return '<div class="' + (k[2] || "") + '"><b>' + k[1] + '</b><span>' + esc(k[0]) + '</span></div>';
+/* Une valeur peut arriver seule, ou en couple [moyenne, total] : le grand
+   chiffre est alors la moyenne, et le total suit en petit. */
+function kpis(arr, suffixe) {
+  var g = '<div class="kpi">' + arr.map(function (k) {
+    var v = k[1], duo = Array.isArray(v) && v.length > 1;
+    var gros = Array.isArray(v) ? v[0] : v;
+    return '<div class="' + (k[2] || "") + '"><b>' + gros + '</b><span>' + esc(k[0])
+      + '</span></div>';
   }).join("") + '</div>';
+  // le « par match » est dit une fois au-dessus, pas sur chacune des sept tuiles
+  return suffixe ? '<div class="astuce">' + esc(suffixe) + '</div>' + g : g;
 }
+
+/* une decimale, mais pas de « 12.0 » */
+function arrondi(v) {
+  var r = Math.round(v * 10) / 10;
+  return (r === Math.round(r)) ? String(Math.round(r)) : r.toFixed(1).replace(".", virgule());
+}
+function virgule() { return LANG === "fr" ? "," : "."; }
 
 function vueSaison() {
   var s = IDX.saison, n = IDX.matchs.length;
@@ -963,10 +980,17 @@ function vueJoueur(num) {
              + '" data-mj="' + num + '">' + dateFr(m.date) + ' · ' + esc(m.adversaire) + '</b>';
       }).join("") + '</div>';
 
-  h += kpis([[t("actions"), tt.actions], [t("passes"), tt.passes],
-             [t("reussite"), pct(tt.passes_ok, tt.passes)],
-             [t("prog"), tt.prog, "f"], [t("tiers"), tt.t3],
-             [t("tirs"), tt.tirs], [t("but"), tt.buts, "ok"]]);
+  // Sur la saison le bandeau donne la MOYENNE PAR MATCH, avec le total en
+  // dessous. Sur un match selectionne il n'y a rien a moyenner.
+  // La reussite reste un rapport calcule sur les totaux : faire la moyenne de
+  // deux pourcentages donnerait un troisieme pourcentage qui n'existe pas.
+  var nm = mm ? 1 : j.matchs.length;
+  var moy = function (v) { return nm > 1 ? [arrondi(v / nm), v] : [v]; };
+  h += kpis([[t("actions"), moy(tt.actions)], [t("passes"), moy(tt.passes)],
+             [t("reussite"), [pct(tt.passes_ok, tt.passes)]],
+             [t("prog"), moy(tt.prog), "f"], [t("tiers"), moy(tt.t3)],
+             [t("tirs"), moy(tt.tirs)], [t("but"), moy(tt.buts), "ok"]],
+            nm > 1 ? t("moyM") + " · " + nm + " " + t("matchs").toLowerCase() : null);
 
   var prof = sel ? (c && c.radar_m ? c.radar_m[sel] : null)
                  : (IDX.radars && IDX.radars.joueurs
@@ -1008,7 +1032,15 @@ function vueJoueur(num) {
 
   h += '<h2 class="sec">' + t("stats") + '</h2><div class="lg sec-lg">'
      + (mm ? dateFr(mm.date) + ' · ' + esc(mm.adversaire) : t("cumul")) + ' · '
-     + t("toutXml") + '</div>' + statsListe(tags || {});
+     + t("toutXml") + '</div>'
+     + '<div class="carte"><h2>' + (mm ? t("ceMatch") : t("totaux")) + '</h2><div class="lst">'
+     + [[t("actions"), tt.actions], [t("passes"), tt.passes],
+        [t("reussite"), pct(tt.passes_ok, tt.passes)],
+        [t("prog"), tt.prog], [t("tiers"), tt.t3],
+        [t("tirs"), tt.tirs], [t("but"), tt.buts]]
+       .map(function (k) { return '<div><b>' + k[1] + '</b><span>' + esc(k[0]) + '</span></div>'; })
+       .join("") + '</div></div>'
+     + statsListe(tags || {});
   return h;
 }
 

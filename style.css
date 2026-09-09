@@ -64,6 +64,8 @@ h1,h2,h3{margin:0;font-weight:700;letter-spacing:-.02em}
 .kpi b{display:block;font-size:26px;font-weight:700;letter-spacing:-.03em;
        font-variant-numeric:tabular-nums;line-height:1.15}
 .kpi span{font-size:11.5px;color:var(--texte-3)}
+.kpi span i{display:block;font-style:normal;font-size:10.5px;color:var(--texte-3);
+            opacity:.72;margin-top:2px;font-variant-numeric:tabular-nums}
 .kpi .a b{color:var(--nous)} .kpi .f b{color:var(--flamme)}
 
 table{width:100%;border-collapse:collapse;font-size:13.5px}
