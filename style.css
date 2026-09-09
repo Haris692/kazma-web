@@ -42,7 +42,10 @@ h1,h2,h3{margin:0;font-weight:700;letter-spacing:-.02em}
 .side-bas{margin-top:auto;padding:14px 16px;border-top:1px solid var(--bord);
           font-size:11px;color:var(--texte-3);line-height:1.6}
 
-.main{padding:26px 30px 60px;max-width:1400px;min-width:0}
+/* pas de largeur maximale : le contenu occupe l'ecran. Les seuls blocs
+   plafonnes sont ceux de texte suivi (.note, .sec-lg), qu'on ne lit plus
+   au-dela d'environ 80 caracteres par ligne. */
+.main{padding:26px 34px 60px;min-width:0}
 /* min-width:0 : sans lui, un tableau large etire toute la colonne de la grille
    et la page deborde lateralement sur mobile. */
 .entete{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;
@@ -85,7 +88,9 @@ td.num{color:var(--texte-3)}
 @media(max-width:1080px){.duo,.trio{grid-template-columns:1fr}}
 
 /* barres opposees, comme la page Key Statistics du PMSR */
-.cmp{display:grid;grid-template-columns:52px 1fr 160px 1fr 52px;align-items:center;
+/* la colonne du milieu suit la largeur : a 160 px fixes les libelles se
+   coupaient en deux des que la page s'elargissait. */
+.cmp{display:grid;grid-template-columns:52px 1fr minmax(170px,260px) 1fr 52px;align-items:center;
      gap:9px;padding:6px 0;border-bottom:1px solid var(--bord)}
 .cmp:last-child{border-bottom:none}
 .cmp .v{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
@@ -101,7 +106,9 @@ td.num{color:var(--texte-3)}
 .leg.code{margin:0 0 14px;padding:9px 14px;background:var(--carte);
           border:1px solid var(--bord);border-radius:var(--r)}
 
-.pitch{width:100%;height:auto;display:block}
+/* plafond commun : sur un ecran large un terrain de 900 px n'apporte rien
+   de plus qu'un de 620, il ecrase juste le reste de la page. */
+.pitch{width:100%;max-width:620px;height:auto;display:block;margin:0 auto}
 .leg{display:flex;gap:8px 18px;flex-wrap:wrap;font-size:12px;color:var(--texte-2);margin-top:10px}
 .leg span{display:flex;align-items:center;gap:7px}
 .leg i{width:11px;height:11px;border-radius:50%;display:block}
@@ -181,6 +188,18 @@ h2.sec{font-size:20px;margin:30px 0 3px}
           cursor:pointer;user-select:none;white-space:nowrap}
 .filtre b:hover{border-color:var(--bord-clair);color:var(--texte)}
 .filtre b.on{background:var(--kazma);border-color:var(--kazma);color:#fff}
+.choixM{font-size:12.5px;font-weight:600;padding:6px 30px 6px 13px;border-radius:20px;
+        border:1px solid var(--bord);background:var(--carte);color:var(--texte-2);
+        cursor:pointer;appearance:none;max-width:min(300px,60vw);
+        background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),
+                         linear-gradient(135deg,currentColor 50%,transparent 50%);
+        background-size:5px 5px,5px 5px;background-repeat:no-repeat;
+        background-position:calc(100% - 15px) 13px,calc(100% - 10px) 13px}
+.choixM:hover{border-color:var(--bord-clair);color:var(--texte)}
+.choixM.on{background-color:var(--kazma);border-color:var(--kazma);color:#fff}
+.choixM option{background:var(--carte);color:var(--texte)}
+html[dir="rtl"] .choixM{padding:6px 13px 6px 30px;
+        background-position:15px 13px,20px 13px}
 tbody tr.sel{background:var(--carte-2);box-shadow:inset 2px 0 0 var(--kazma)}
 html[dir="rtl"] tbody tr.sel{box-shadow:inset -2px 0 0 var(--kazma)}
 
@@ -219,8 +238,10 @@ html[dir="rtl"] th.tri i{margin-left:0;margin-right:4px}
 @media(prefers-reduced-motion:reduce){.bulle{transition:none}}
 
 /* ---------- profil : radar ---------- */
-.radar-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,260px);
-            gap:18px;align-items:center;margin-top:6px}
+/* le couple radar + verdict reste groupe et centre : sans plafond il se
+   disloquait aux deux bouts d'une carte pleine largeur. */
+.radar-wrap{display:grid;grid-template-columns:minmax(0,440px) minmax(0,300px);
+            gap:40px;align-items:center;margin-top:6px;justify-content:center}
 .radar{width:100%;max-width:440px;height:auto;display:block;margin:0 auto;direction:ltr}
 .radar-cote{display:flex;flex-direction:column;gap:12px}
 .fw{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
