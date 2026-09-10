@@ -842,8 +842,12 @@ function reseauSvg(d, liens, seuil, titre) {
   var x1 = Math.min(L + 3, Math.max.apply(null, xs) + marge);
   var y0 = Math.max(-3, Math.min.apply(null, ys) - marge * 0.6);
   var y1 = Math.min(W + 3, Math.max.apply(null, ys) + marge * 0.6);
-  var cadre = [x0, y0, x1 - x0, y1 - y0];
-  var k = (x1 - x0) / (L + 6);          // 1 = terrain entier, 0,5 = deux fois plus gros
+  // TERRAIN ENTIER. Le cadrage sur la zone occupee est calcule au-dessus mais
+  // desactive : Haris prefere garder le terrain complet, qui donne le repere
+  // spatial. Pour revenir au cadrage serre, remettre les deux lignes du bas.
+  var cadre = null, k = 1;
+  // var cadre = [x0, y0, x1 - x0, y1 - y0];
+  // var k = (x1 - x0) / (L + 6);       // 1 = terrain entier, 0,5 = deux fois plus gros
 
   /* les noms se placent sous le disque, ou au-dessus si un voisin occupe deja la place */
   var poses = [], noms = "";
