@@ -240,6 +240,19 @@ html[dir="rtl"] th.tri i{margin-left:0;margin-right:4px}
 @media(prefers-reduced-motion:reduce){.bulle{transition:none}}
 
 /* ---------- couloirs ---------- */
+.terC{display:grid;grid-template-columns:62px minmax(0,1fr);gap:8px;align-items:stretch}
+.terC .pitch{max-width:none;margin:0}
+.terC-e{display:flex;flex-direction:column;justify-content:space-between;
+        padding:4.05% 0;text-align:end}
+.terC-e span{flex:1;display:flex;flex-direction:column;justify-content:center;gap:1px}
+.terC-e b{font-size:15px;font-weight:700;color:var(--texte);font-variant-numeric:tabular-nums;
+          line-height:1}
+.terC-e i{font-style:normal;font-size:10px;color:var(--texte-3);line-height:1.15}
+@media(max-width:600px){
+  .terC{grid-template-columns:48px minmax(0,1fr);gap:6px}
+  .terC-e b{font-size:13px} .terC-e i{font-size:9px}
+}
+
 table.cou td b{display:block;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
 table.cou td i{display:block;font-style:normal;font-size:11px;color:var(--texte-3);
                margin-top:1px}

@@ -311,18 +311,20 @@ function terrain(pts, o) {
   /* Les couloirs : trois bandes de 22,67 m. Elles se dessinent SOUS les points,
      assez pales pour ne pas les concurrencer -- une bande de fond ne doit pas
      se lire plus fort que la donnee qu'elle situe. */
+  var parts = [];
   if (o.couloirs) {
     var tot = o.couloirs.reduce(function (a, b) { return a + b; }, 0) || 1;
     for (var ci = 0; ci < 3; ci++) {
       var part = Math.round(100 * o.couloirs[ci] / tot);
-      s += '<rect x="0" y="' + (ci * W / 3).toFixed(2) + '" width="' + L
-         + '" height="' + (W / 3).toFixed(2) + '" fill="var(--nous)" fill-opacity="'
-         + (0.03 + 0.10 * o.couloirs[ci] / Math.max.apply(null, o.couloirs)).toFixed(3) + '"/>'
-        + '<line x1="0" y1="' + (ci * W / 3).toFixed(2) + '" x2="' + L + '" y2="'
-         + (ci * W / 3).toFixed(2) + '" stroke="' + c + '" stroke-width=".25" '
-         + 'stroke-dasharray="1.5 1.5"/>'
-        + '<text x="2.5" y="' + (ci * W / 3 + 6).toFixed(2) + '" font-size="4.6" '
-         + 'font-weight="700" fill="var(--texte-2)" fill-opacity=".85">' + part + '%</text>';
+      if (o.bandes !== false) {
+        s += '<rect x="0" y="' + (ci * W / 3).toFixed(2) + '" width="' + L
+           + '" height="' + (W / 3).toFixed(2) + '" fill="var(--nous)" fill-opacity="'
+           + (0.03 + 0.10 * o.couloirs[ci] / Math.max.apply(null, o.couloirs)).toFixed(3) + '"/>'
+          + '<line x1="0" y1="' + (ci * W / 3).toFixed(2) + '" x2="' + L + '" y2="'
+           + (ci * W / 3).toFixed(2) + '" stroke="' + c + '" stroke-width=".25" '
+           + 'stroke-dasharray="1.5 1.5"/>';
+      }
+      parts.push(part);
     }
   }
   if (o.lignes) [35, 70].forEach(function (x) {
@@ -330,8 +332,18 @@ function terrain(pts, o) {
        + '" stroke-width=".4" stroke-dasharray="2 2"/>';
   });
   var c_ = o.cadre || [-3, -3, L + 6, W + 6];
-  return '<svg class="pitch" viewBox="' + c_.join(" ")
-       + '" role="img" aria-label="' + esc(o.alt || "") + '">' + s + (pts || "") + '</svg>';
+  var svg = '<svg class="pitch" viewBox="' + c_.join(" ")
+          + '" role="img" aria-label="' + esc(o.alt || "") + '">' + s + (pts || "") + '</svg>';
+  if (!parts.length) return svg;
+  /* Les pourcentages sortent du terrain : dessines dessus ils se battaient avec
+     les points. La colonne a la meme hauteur que le SVG et se decoupe en trois,
+     donc chaque chiffre reste en face de sa bande. Le rembourrage de 4,05 %
+     compense la marge du viewBox (3 unites sur 74). */
+  var noms = [t("cGauche"), t("cAxe"), t("cDroite")];
+  return '<div class="terC"><div class="terC-e">'
+       + parts.map(function (v, i) {
+           return '<span><b>' + v + ' %</b><i>' + esc(noms[i]) + '</i></span>';
+         }).join("") + '</div>' + svg + '</div>';
 }
 /* y est mesure depuis le bas, SVG compte vers le bas : d'ou le W - y */
 function point(x, y, r, coul, plein) {
@@ -1037,14 +1049,14 @@ function carteTirs(c, portee) {
     + '</div>';
 }
 
-function carteProg(c, portee) {
+function carteProg(c, portee, couloirs) {
   if (!c.prog.length) return "";
   var ok = c.prog.filter(function (p) { return p[2]; }).length;
   return '<div class="carte"><h2>' + t("cProg") + '</h2><div class="lg">'
     + portee + c.prog.length + " · " + pl(ok, "reussies") + '</div>'
     + terrain(c.prog.map(function (p) {
         return point(p[0], p[1], 1.5, p[2] ? "var(--vert)" : "var(--rouge)", 1);
-      }).join(""), { alt: t("cProg") })
+      }).join(""), { alt: t("cProg"), couloirs: couloirs || null })
     + legende([["var(--vert)", t("reussie")], ["var(--rouge)", t("ratee")]]) + '</div>';
 }
 
@@ -1064,7 +1076,7 @@ function carteBallons(c, portee) {
 function carteZones(c, portee) {
   var z = c.zones || [], tot = z.reduce(function (a, b) { return a + b; }, 0);
   if (!tot) return "";
-  var CO = 6, LI = 4, lx = L / CO, ly = W / LI, mx = Math.max.apply(null, z), s = "";
+  var CO = 6, LI = 3, lx = L / CO, ly = W / LI, mx = Math.max.apply(null, z), s = "";
   for (var i = 0; i < z.length; i++) {
     var col = i % CO, lig = Math.floor(i / CO), v = z[i] / mx;
     s += '<rect x="' + (col * lx).toFixed(1) + '" y="' + (W - (lig + 1) * ly).toFixed(1)
@@ -1076,9 +1088,15 @@ function carteZones(c, portee) {
          + (W - (lig + 0.5) * ly + 1.6).toFixed(1) + '" text-anchor="middle" font-size="4"'
          + ' font-weight="700" fill="#fff" fill-opacity=".92">' + part + '%</text>';
   }
+  // les lignes de la grille sont les couloirs : on peut donc sommer chaque ligne
+  var parC = [0, 1, 2].map(function (l) {
+    var v = 0;
+    for (var i = 0; i < CO; i++) v += z[(2 - l) * CO + i];   // ligne 2 = haut = gauche
+    return v;
+  });
   return '<div class="carte"><h2>' + t("cZones") + '</h2><div class="lg">'
     + portee + pl(tot, "actions") + " · " + t("cZonesN") + '</div>'
-    + terrain(s, { alt: t("cZones") }) + '</div>';
+    + terrain(s, { alt: t("cZones"), couloirs: parC, bandes: false }) + '</div>';
 }
 
 /* Reussite geste par geste. Chaque paire a ete verifiee : les deux etiquettes
@@ -1259,8 +1277,9 @@ function vueJoueur(num) {
     var portee = cap(mm ? t("surCeMatch")
                         : t("surLesM") + " " + j.matchs.length + " " + t("matchs").toLowerCase())
                + " · ";
-    blocs = [carteZones(cf, portee), carteTirs(cf, portee), carteProg(cf, portee),
-             carteBallons(cf, portee)];
+    var couP = mm ? ((c.couloirs_m || {})[sel] || {}).prog : (c.couloirs || {}).prog;
+    blocs = [carteZones(cf, portee), carteTirs(cf, portee),
+             carteProg(cf, portee, couP), carteBallons(cf, portee)];
   }
   blocs = blocs.concat([carteP]).filter(function (b) { return b; });
   h += '<div class="duo">' + blocs.join("") + '</div>';
