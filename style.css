@@ -239,6 +239,17 @@ html[dir="rtl"] th.tri i{margin-left:0;margin-right:4px}
 .bulle.on{opacity:1;transform:none}
 @media(prefers-reduced-motion:reduce){.bulle{transition:none}}
 
+/* ---------- couloirs ---------- */
+table.cou td b{display:block;font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+table.cou td i{display:block;font-style:normal;font-size:11px;color:var(--texte-3);
+               margin-top:1px}
+table.cou td{text-align:center;padding:7px 8px}
+table.cou th{text-align:center}
+table.cou td.g,table.cou th.g{text-align:left;color:var(--texte-2);font-size:12.5px;
+                              white-space:nowrap}
+table.cou tbody tr{cursor:default}
+table.cou tbody tr:hover{background:none}
+
 /* ---------- comparaison de deux joueurs ---------- */
 .cmpj{display:flex;align-items:center;gap:9px;margin:2px 0 4px}
 .cmpj span{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--texte-3);

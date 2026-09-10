@@ -226,6 +226,17 @@ var T = {
   moyM:       { fr: "Moyenne par match",    en: "Average per match",  ar: "المتوسط لكل مباراة" },
   unMatch:    { fr: "Un match…",            en: "One match…",         ar: "مباراة واحدة…" },
   comparer:   { fr: "Comparer à",           en: "Compare with",       ar: "قارن مع" },
+  couloirs:   { fr: "Les couloirs",         en: "The channels",       ar: "الممرات" },
+  couloirsN:  { fr: "Le terrain coupé en trois bandes de 22,7 m. Le pourcentage donne la part de chaque couloir ; en dessous, le compte. Un couloir très emprunté qui ne fait pas mieux que les autres en réussite est un couloir subi, pas choisi.",
+                en: "The pitch cut into three 22.7 m bands. The percentage is each channel's share; the count sits below it. A heavily used channel whose completion is no better than the others is a channel the side falls into, not one it chooses.",
+                ar: "الملعب مقسوم إلى ثلاثة أشرطة بعرض 22.7 م. النسبة تمثل حصة كل ممر، والعدد تحتها." },
+  cGauche:    { fr: "Couloir gauche",       en: "Left channel",       ar: "الممر الأيسر" },
+  cAxe:       { fr: "Axe",                  en: "Centre",             ar: "المحور" },
+  cDroite:    { fr: "Couloir droit",        en: "Right channel",      ar: "الممر الأيمن" },
+  couT3:      { fr: "Actions, dernier tiers", en: "Final-third actions", ar: "أحداث الثلث الأخير" },
+  couProg:    { fr: "Passes progressives",  en: "Progressive passes", ar: "التمريرات التقدمية" },
+  couTirs:    { fr: "Tirs",                 en: "Shots",              ar: "التسديدات" },
+  couPc:      { fr: "Réussite des passes",  en: "Pass completion",    ar: "نجاح التمرير" },
   aucun:      { fr: "personne",             en: "nobody",             ar: "لا أحد" },
   faceAface:  { fr: "Face à face",          en: "Head to head",       ar: "مواجهة مباشرة" },
   surLesM:    { fr: "Sur les",              en: "Over",               ar: "على مدى" },
@@ -297,6 +308,23 @@ function terrain(pts, o) {
      + '<rect x="' + (L - 16.5) + '" y="13.84" width="16.5" height="40.32" ' + f + '/>'
      + '<rect x="0" y="24.84" width="5.5" height="18.32" ' + f + '/>'
      + '<rect x="' + (L - 5.5) + '" y="24.84" width="5.5" height="18.32" ' + f + '/>';
+  /* Les couloirs : trois bandes de 22,67 m. Elles se dessinent SOUS les points,
+     assez pales pour ne pas les concurrencer -- une bande de fond ne doit pas
+     se lire plus fort que la donnee qu'elle situe. */
+  if (o.couloirs) {
+    var tot = o.couloirs.reduce(function (a, b) { return a + b; }, 0) || 1;
+    for (var ci = 0; ci < 3; ci++) {
+      var part = Math.round(100 * o.couloirs[ci] / tot);
+      s += '<rect x="0" y="' + (ci * W / 3).toFixed(2) + '" width="' + L
+         + '" height="' + (W / 3).toFixed(2) + '" fill="var(--nous)" fill-opacity="'
+         + (0.03 + 0.10 * o.couloirs[ci] / Math.max.apply(null, o.couloirs)).toFixed(3) + '"/>'
+        + '<line x1="0" y1="' + (ci * W / 3).toFixed(2) + '" x2="' + L + '" y2="'
+         + (ci * W / 3).toFixed(2) + '" stroke="' + c + '" stroke-width=".25" '
+         + 'stroke-dasharray="1.5 1.5"/>'
+        + '<text x="2.5" y="' + (ci * W / 3 + 6).toFixed(2) + '" font-size="4.6" '
+         + 'font-weight="700" fill="var(--texte-2)" fill-opacity=".85">' + part + '%</text>';
+    }
+  }
   if (o.lignes) [35, 70].forEach(function (x) {
     s += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="' + W + '" stroke="' + c
        + '" stroke-width=".4" stroke-dasharray="2 2"/>';
@@ -619,6 +647,41 @@ function vueJoueurs() {
     + '<div class="carte">' + tableauJoueurs(IDX.joueurs, 'tous') + '</div>';
 }
 
+/* ------------------------------------------------------- les couloirs
+   Trois bandes, trois lignes : part des actions, part des passes progressives,
+   et reussite des passes dans chaque bande. La reussite est ce qui distingue
+   un cote emprunte d'un cote qui produit. */
+function blocCouloirs(d) {
+  var A = d.domicile, B = d.exterieur, nous = A === IDX.equipe ? A : B;
+  var noms = [t("cGauche"), t("cAxe"), t("cDroite")];
+  var ligne = function (lab, vals, pc) {
+    var tot = vals.reduce(function (a, b) { return a + b; }, 0) || 1;
+    return '<tr><td class="g">' + lab + '</td>'
+      + vals.map(function (v, i) {
+          return '<td><b>' + Math.round(100 * v / tot) + ' %</b><i>'
+               + (pc ? pc[i] : v) + '</i></td>';
+        }).join("") + '</tr>';
+  };
+  var bloc = function (e) {
+    var c = d.couloirs[e];
+    var pcT3 = c.t3.passes.map(function (n, i) {
+      return n ? Math.round(100 * c.t3.ok[i] / n) + " %" : "—";
+    });
+    return '<div class="carte"><h2>' + esc(e) + '</h2>'
+      + '<div class="tw"><table class="cou"><thead><tr><th class="g"></th>'
+      + noms.map(function (n) { return "<th>" + esc(n) + "</th>"; }).join("")
+      + '</tr></thead><tbody>'
+      + ligne(t("couT3"), c.t3.n)
+      + ligne(t("couProg"), c.prog.n)
+      + ligne(t("couTirs"), c.tirs)
+      + '<tr><td class="g">' + t("couPc") + '</td>'
+      + pcT3.map(function (x) { return '<td><b>' + x + '</b></td>'; }).join("")
+      + '</tr></tbody></table></div></div>';
+  };
+  return '<h2 class="sec">' + t("couloirs") + '</h2><div class="note sec-lg">'
+    + t("couloirsN") + '</div><div class="duo">' + bloc(A) + bloc(B) + '</div>';
+}
+
 function vueMatch(d) {
   var A = d.domicile, B = d.exterieur, sb = d.equipes[B], sa = d.equipes[A];
   var nous = A === IDX.equipe ? A : B;
@@ -660,7 +723,9 @@ function vueMatch(d) {
           + ' ' + t("reussie") + '</div>'
           + terrain(q.map(function (x) {
               return point(x[0], x[1], 1.7, x[2] ? coul : "var(--rouge)", 1);
-            }).join(""), { lignes: 1, alt: e })
+            }).join(""), { lignes: 1, alt: e,
+                           couloirs: ((d.couloirs || {})[e] || {}).prog
+                                     ? d.couloirs[e].prog.n : null })
           + legende([[coul, t("reussie")], ["var(--rouge)", t("ratee")]]) + '</div>';
       }).join("") + '</div>';
 
@@ -674,13 +739,17 @@ function vueMatch(d) {
        + reseauSvg(d, d.reseau_prog, 2, t("progSeul"));
   }
 
+  if (d.couloirs) h += blocCouloirs(d);
+
   h += mk(t("tiersT"), function (e, coul) {
     var s = d.equipes[e], q = d.tiers[e] || [];
     return '<div class="carte"><h2>' + esc(e) + '</h2><div class="lg">' + s.t3_actions + ' '
       + t("actions") + ' · ' + t("passesR") + ' ' + pct(s.t3_ok, s.t3_passes) + '</div>'
       + terrain(q.map(function (x) {
           return point(x[0], x[1], 1.6, x[2] ? "var(--vert)" : "var(--rouge)", 1);
-        }).join(""), { lignes: 1, tiers: coul, alt: e })
+        }).join(""), { lignes: 1, tiers: coul, alt: e,
+                       couloirs: ((d.couloirs || {})[e] || {}).t3
+                                 ? d.couloirs[e].t3.n : null })
       + legende([["var(--vert)", t("reussie")], ["var(--rouge)", t("ratee")]]) + '</div>';
   });
 
