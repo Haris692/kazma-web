@@ -301,7 +301,8 @@ function terrain(pts, o) {
     s += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="' + W + '" stroke="' + c
        + '" stroke-width=".4" stroke-dasharray="2 2"/>';
   });
-  return '<svg class="pitch" viewBox="-3 -3 ' + (L + 6) + ' ' + (W + 6)
+  var c_ = o.cadre || [-3, -3, L + 6, W + 6];
+  return '<svg class="pitch" viewBox="' + c_.join(" ")
        + '" role="img" aria-label="' + esc(o.alt || "") + '">' + s + (pts || "") + '</svg>';
 }
 /* y est mesure depuis le bas, SVG compte vers le bas : d'ou le W - y */
@@ -744,30 +745,47 @@ function reseauSvg(d, liens, seuil, titre) {
     if (n < seuil) return;
     var p = k.split("-"), a = pos[p[0]], b = pos[p[1]];
     s += '<line x1="' + a.x_med + '" y1="' + (W - a.y_med) + '" x2="' + b.x_med + '" y2="'
-       + (W - b.y_med) + '" stroke="var(--nous)" stroke-width="' + (0.3 + 2.4 * n / vmax).toFixed(2)
+       + (W - b.y_med) + '" stroke="var(--nous)" stroke-width="' + (k * (0.35 + 2.6 * n / vmax)).toFixed(2)
        + '" stroke-opacity="' + (0.2 + 0.6 * n / vmax).toFixed(2) + '"/>';
   });
+  /* Cadrage. Les positions medianes se serrent au centre : sur le terrain entier
+     les onze joueurs tiennent dans moins d'un tiers de la surface, et agrandir
+     le terrain ne fait qu'agrandir le vide. On cadre donc sur la zone occupee,
+     avec assez de marge pour garder la ligne mediane et les surfaces en
+     reperes. Les marques sont ensuite mises a l'echelle du cadre, sinon un
+     zoom fort donnerait des noms gigantesques. */
+  var xs = [], ys = [];
+  Object.keys(pos).forEach(function (k) { xs.push(pos[k].x_med); ys.push(W - pos[k].y_med); });
+  var marge = 21;
+  var x0 = Math.max(-3, Math.min.apply(null, xs) - marge);
+  var x1 = Math.min(L + 3, Math.max.apply(null, xs) + marge);
+  var y0 = Math.max(-3, Math.min.apply(null, ys) - marge * 0.6);
+  var y1 = Math.min(W + 3, Math.max.apply(null, ys) + marge * 0.6);
+  var cadre = [x0, y0, x1 - x0, y1 - y0];
+  var k = (x1 - x0) / (L + 6);          // 1 = terrain entier, 0,5 = deux fois plus gros
+
   /* les noms se placent sous le disque, ou au-dessus si un voisin occupe deja la place */
   var poses = [], noms = "";
   Object.keys(pos).map(function (k) { return pos[k]; })
     .sort(function (a, b) { return a.y_med - b.y_med; })
     .forEach(function (j) {
       s += '<circle cx="' + j.x_med + '" cy="' + (W - j.y_med) + '" r="'
-         + (2.6 + 2.8 * Math.sqrt(j.actions / 160)).toFixed(2)
-         + '" fill="var(--nous)" stroke="var(--fond)" stroke-width=".6"/>';
-      var y = W - j.y_med + 6.4, haut = false;
+         + (k * (2.7 + 2.9 * Math.sqrt(j.actions / 160))).toFixed(2)
+         + '" fill="var(--nous)" stroke="var(--fond)" stroke-width="' + (k * .7).toFixed(2) + '"/>';
+      var y = W - j.y_med + k * 6.6, haut = false;
       for (var i = 0; i < poses.length; i++)
-        if (Math.abs(poses[i][0] - j.x_med) < 13 && Math.abs(poses[i][1] - y) < 5) haut = true;
-      if (haut) y = W - j.y_med - 4.6;
+        if (Math.abs(poses[i][0] - j.x_med) < k * 15 && Math.abs(poses[i][1] - y) < k * 5.4)
+          haut = true;
+      if (haut) y = W - j.y_med - k * 4.8;
       poses.push([j.x_med, y]);
-      noms += '<text x="' + j.x_med + '" y="' + (W - j.y_med + 1.1) + '" text-anchor="middle" '
-           + 'font-size="3.1" font-weight="700" fill="#fff">' + j.numero + '</text>'
-           + '<text x="' + j.x_med + '" y="' + y + '" text-anchor="middle" font-size="3.4" '
+      noms += '<text x="' + j.x_med + '" y="' + (W - j.y_med + k * 1.15) + '" text-anchor="middle" '
+           + 'font-size="' + (k * 3.2).toFixed(2) + '" font-weight="700" fill="#fff">' + j.numero + '</text>'
+           + '<text x="' + j.x_med + '" y="' + y + '" text-anchor="middle" font-size="' + (k * 3.5).toFixed(2) + '" '
            + 'font-weight="700" fill="var(--texte)">' + esc(court(j.nom)) + '</text>';
     });
   return '<div class="carte large"><h2>' + esc(titre) + '</h2><div class="lg">'
     + t("liens") + ' ' + seuil + ' ' + t("passesM") + '</div>'
-    + terrain(s + noms, { alt: titre }) + '</div>';
+    + terrain(s + noms, { alt: titre, cadre: cadre }) + '</div>';
 }
 
 /* ------------------------------------------------------- profil : le radar

@@ -176,7 +176,9 @@ h2.sec{font-size:20px;margin:30px 0 3px}
 
 /* ---------- terrain pleine largeur ---------- */
 .carte.large{padding:20px 22px}
-.carte.large .pitch{max-width:520px;margin:0 auto}
+/* le schema de passes est cadre sur la zone occupee, donc il supporte -- et
+   demande -- d'etre plus grand que les cartes de points. */
+.carte.large .pitch{max-width:660px;margin:0 auto}
 /* 520 px : le terrain fait 111 unites de large, donc un nom de joueur
    (font-size 3.4) sort a ~16 px. Plus large, la carte ecrase la page ;
    plus etroit, les noms deviennent illisibles. */
