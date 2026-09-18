@@ -11,6 +11,11 @@ var L = 105, W = 68, TIERS = 70;
 
 var T = {
   /* --- analyse video : section alimentee par data/analyse_video.json --- */
+  /* --- categories de match, pour le regroupement de la barre laterale --- */
+  cChampionnat: { fr: "Championnat",       en: "League",             ar: "الدوري" },
+  cCoupe:       { fr: "Coupe",             en: "Cup",                ar: "الكأس" },
+  cAmical:      { fr: "Matchs amicaux",    en: "Friendlies",         ar: "مباريات ودية" },
+  cAutre:       { fr: "Autres",            en: "Other",              ar: "أخرى" },
   analyseV:   { fr: "Analyse vidéo",        en: "Video analysis",     ar: "التحليل بالفيديو" },
   mlTitre:    { fr: "Analyse du match",     en: "Match analysis",     ar: "تحليل المباراة" },
   mlSous:     { fr: "Position de chaque joueur mesurée sur la vidéo, et relevé du fournisseur",
@@ -507,10 +512,28 @@ function nav() {
     + '<a href="#/joueurs" class="' + (h === "#/joueurs" ? "on" : "") + '"><i class="p"></i>' + t("tousJ") + '</a>'
     + '<a href="#/analyse-video" class="' + (h === "#/analyse-video" ? "on" : "")
     + '"><i class="p"></i>' + t("analyseV") + '</a>';
-  $("#nav-matchs").innerHTML = IDX.matchs.slice().reverse().map(function (m) {
-    var u = "#/match/" + m.match_id;
-    return '<a href="' + u + '" class="' + (h === u ? "on" : "") + '"><i class="p"></i>'
-      + esc(m.adversaire) + '</a>';
+  /* Les matchs sont groupes par competition. L'ordre des groupes est fixe --
+     championnat, coupe, amicaux, autres -- et non celui ou ils apparaissent :
+     sinon le menu se reordonne tout seul quand un amical arrive avant un match
+     de championnat. Un groupe vide ne s'affiche pas. */
+  var ORDRE_C = ["championnat", "coupe", "amical"];
+  var CLE_C = { championnat: "cChampionnat", coupe: "cCoupe", amical: "cAmical" };
+  var parC = {};
+  IDX.matchs.slice().reverse().forEach(function (m) {
+    var c = m.competition || "championnat";
+    (parC[c] = parC[c] || []).push(m);
+  });
+  var groupes = ORDRE_C.filter(function (c) { return parC[c]; })
+    .concat(Object.keys(parC).filter(function (c) { return ORDRE_C.indexOf(c) < 0; }));
+  $("#nav-matchs").innerHTML = groupes.map(function (c) {
+    /* Le sous-titre s'affiche meme s'il n'y a qu'un groupe : c'est lui qui dit
+       au lecteur de quelle competition sont les matchs au-dessous. */
+    var titre = '<div class="sgrp">' + t(CLE_C[c] || "cAutre") + '</div>';
+    return titre + parC[c].map(function (m) {
+      var u = "#/match/" + m.match_id;
+      return '<a href="' + u + '" class="' + (h === u ? "on" : "") + '"><i class="p"></i>'
+        + esc(m.adversaire) + '</a>';
+    }).join("");
   }).join("");
   $("#nav-joueurs").innerHTML = IDX.joueurs.slice(0, 10).map(function (j) {
     var u = "#/joueur/" + j.numero;

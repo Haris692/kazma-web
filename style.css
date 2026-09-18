@@ -415,3 +415,8 @@ td .nu{color:var(--texte-3);font-variant-numeric:tabular-nums;min-width:22px}
 .carte.lim li{margin:7px 0;color:var(--texte-2);font-size:13.5px}
 .carte.lim .src{margin-top:12px;padding-top:10px;border-top:1px solid var(--bord);
   font-size:11.5px;line-height:1.6}
+
+/* sous-titre de groupe dans la liste des matchs */
+.nav .sgrp{padding:10px 14px 3px;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--texte-3);font-weight:600}
+.nav .sgrp:first-child{padding-top:2px}
