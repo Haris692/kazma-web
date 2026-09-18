@@ -401,3 +401,17 @@ td .nu{color:var(--texte-3);font-variant-numeric:tabular-nums;min-width:22px}
   .lst{grid-template-columns:1fr}
   .entete h1{font-size:19px}
 }
+
+
+/* ---------- analyse video ---------- */
+.fig{width:100%;display:block;border-radius:8px;background:var(--carte)}
+.duo-fig{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
+.duo-fig .carte{margin-bottom:0}
+.kpi b .u{font-style:normal;font-size:14px;color:var(--texte-3);margin-inline-start:3px}
+.src-v{color:var(--kazma)}
+.src-f{color:var(--flamme)}
+.src-e{color:var(--vert)}
+.carte.lim ul{margin:6px 0 0;padding-inline-start:18px}
+.carte.lim li{margin:7px 0;color:var(--texte-2);font-size:13.5px}
+.carte.lim .src{margin-top:12px;padding-top:10px;border-top:1px solid var(--bord);
+  font-size:11.5px;line-height:1.6}

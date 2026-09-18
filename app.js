@@ -10,6 +10,74 @@ var IDX = null, CACHE = {}, CARTES = {}, SEL = {}, CMP = {}, LANG = localStorage
 var L = 105, W = 68, TIERS = 70;
 
 var T = {
+  /* --- analyse video : section alimentee par data/analyse_video.json --- */
+  analyseV:   { fr: "Analyse vidéo",        en: "Video analysis",    ar: "التحليل بالفيديو" },
+  mlTitre:    { fr: "Analyse vidéo automatique", en: "Automated video analysis",
+                ar: "التحليل الآلي بالفيديو" },
+  mlSous:     { fr: "Position de chaque joueur en mètres, mesurée sur la vidéo du match",
+                en: "Every player's position in metres, measured from the match video",
+                ar: "موقع كل لاعب بالأمتار، مقاس من فيديو المباراة" },
+  mlCalib:    { fr: "minutes calibrées",    en: "minutes calibrated", ar: "دقائق معايرة" },
+  mlErreur:   { fr: "d’erreur médiane",     en: "median error",       ar: "متوسط الخطأ" },
+  mlClics:    { fr: "images calibrées à la main", en: "images calibrated by hand",
+                ar: "صور معايرة يدويًا" },
+  mlPersonnes:{ fr: "personnes par image",  en: "people per frame",   ar: "أشخاص في الصورة" },
+  mlPistes:   { fr: "pistes de joueurs",    en: "player tracks",      ar: "مسارات اللاعبين" },
+  mlEquipes:  { fr: "d’équipes justes",     en: "team accuracy",      ar: "دقة تحديد الفريق" },
+  mlOccup:    { fr: "Occupation du terrain", en: "Pitch occupation",  ar: "تغطية الملعب" },
+  mlOccupL:   { fr: "Toutes les positions mesurées sur les 100 minutes",
+                en: "Every position measured across the 100 minutes",
+                ar: "كل المواقع المقاسة خلال 100 دقيقة" },
+  mlBlocs:    { fr: "Le bloc des deux équipes", en: "Both teams’ blocks",
+                ar: "كتلة الفريقين" },
+  mlBlocsL:   { fr: "Longueur, largeur et hauteur médianes, gardien exclu",
+                en: "Median length, width and height, goalkeeper excluded",
+                ar: "الطول والعرض والارتفاع الوسيط، دون حارس المرمى" },
+  mlHauteur:  { fr: "Hauteur du bloc, minute par minute",
+                en: "Block height, minute by minute", ar: "ارتفاع الكتلة دقيقة بدقيقة" },
+  mlHauteurL: { fr: "Distance entre le bloc et son propre but",
+                en: "Distance between the block and its own goal",
+                ar: "المسافة بين الكتلة ومرماها" },
+  mlTirs:     { fr: "Les tirs",             en: "Attempts at goal",   ar: "التسديدات" },
+  mlTirsL:    { fr: "Relevé du fournisseur — étoile : but, disque plein : cadré",
+                en: "Provider data — star: goal, filled dot: on target",
+                ar: "بيانات المزود — نجمة: هدف، دائرة ممتلئة: على المرمى" },
+  mlSuivi:    { fr: "Le suivi des joueurs", en: "Player tracking",    ar: "تتبع اللاعبين" },
+  mlSuiviL:   { fr: "Combien de pistes tiennent au moins N secondes",
+                en: "How many tracks last at least N seconds",
+                ar: "عدد المسارات التي تدوم N ثانية على الأقل" },
+  mlDetect:   { fr: "La détection",         en: "Detection",          ar: "الكشف" },
+  mlDetectL:  { fr: "Personnes trouvées sur chaque image analysée",
+                en: "People found on each analysed frame",
+                ar: "الأشخاص المكتشفون في كل صورة" },
+  mlCalibF:   { fr: "La calibration",       en: "Calibration",        ar: "المعايرة" },
+  mlCalibL:   { fr: "Chaque calibration humaine retirée, puis refaite par la machine",
+                en: "Each human calibration removed, then redone by the machine",
+                ar: "كل معايرة بشرية تُزال ثم تُعاد آليًا" },
+  mlEqF:      { fr: "L’attribution d’équipe", en: "Team assignment",  ar: "تحديد الفريق" },
+  mlEqL:      { fr: "Le modèle confronté à 300 vignettes étiquetées à la main",
+                en: "The model against 300 hand-labelled crops",
+                ar: "النموذج مقابل 300 صورة مصنفة يدويًا" },
+  mlForme:    { fr: "La forme des deux blocs", en: "Both teams’ shape", ar: "شكل الفريقين" },
+  mlLong:     { fr: "Longueur",             en: "Length",             ar: "الطول" },
+  mlLarg:     { fr: "Largeur",              en: "Width",              ar: "العرض" },
+  mlLigne:    { fr: "Ligne défensive",      en: "Defensive line",     ar: "خط الدفاع" },
+  mlCentre:   { fr: "Centre de gravité",    en: "Centre of gravity",  ar: "مركز الثقل" },
+  mlLimites:  { fr: "Ce que cette mesure ne dit pas", en: "What this does not tell you",
+                ar: "ما لا يخبرك به هذا القياس" },
+  mlLim1:     { fr: "Aucun joueur n’est nommé. Le suivi perd l’identité sur les croisements : une piste dure %PISTE% secondes en médiane. Les chiffres valent pour une équipe, jamais pour un joueur précis.",
+                en: "No player is named. Tracking loses identity on crossings: a track lasts %PISTE% seconds on average. The figures describe a team, never an individual.",
+                ar: "لا يُسمّى أي لاعب. يفقد التتبع الهوية عند التقاطع: يدوم المسار %PISTE% ثانية وسطيًا. الأرقام تصف فريقًا لا لاعبًا." },
+  mlLim2:     { fr: "La caméra suit le ballon : une équipe n’est pas toujours entière dans le champ. Les mesures ne portent que sur les images où au moins huit de ses joueurs sont visibles.",
+                en: "The camera follows the ball: a team is not always fully in frame. Measurements only use frames where at least eight of its players are visible.",
+                ar: "تتبع الكاميرا الكرة: لا يظهر الفريق كاملًا دائمًا. تُحتسب القياسات فقط حين يظهر ثمانية لاعبين على الأقل." },
+  mlLim3:     { fr: "Le ballon n’est pas suivi. Possession, passes et tirs de cette page viennent du relevé du fournisseur, pas de la vidéo.",
+                en: "The ball is not tracked. Possession, passes and attempts on this page come from the provider, not from the video.",
+                ar: "لا تُتتبع الكرة. الاستحواذ والتمريرات والتسديدات هنا من المزود لا من الفيديو." },
+  mlSources:  { fr: "Sources",              en: "Sources",            ar: "المصادر" },
+  mlVideo:    { fr: "Mesuré sur la vidéo",  en: "Measured from video", ar: "مقاس من الفيديو" },
+  mlFourn:    { fr: "Relevé du fournisseur", en: "Provider data",     ar: "بيانات المزود" },
+  mlVerite:   { fr: "Étiquetage humain",    en: "Human labelling",    ar: "تصنيف بشري" },
   titre:      { fr: "Statistiques",        en: "Statistics",        ar: "الإحصائيات" },
   equipe:     { fr: "Équipe",              en: "Team",              ar: "الفريق" },
   matchs:     { fr: "Matchs",              en: "Matches",           ar: "المباريات" },
@@ -423,7 +491,9 @@ function nav() {
   $("#t-titre").textContent = t("titre");
   $("#nav-equipe").innerHTML =
     '<a href="#/" class="' + (h === "#/" ? "on" : "") + '"><i class="p"></i>' + t("ensemble") + '</a>'
-    + '<a href="#/joueurs" class="' + (h === "#/joueurs" ? "on" : "") + '"><i class="p"></i>' + t("tousJ") + '</a>';
+    + '<a href="#/joueurs" class="' + (h === "#/joueurs" ? "on" : "") + '"><i class="p"></i>' + t("tousJ") + '</a>'
+    + '<a href="#/analyse-video" class="' + (h === "#/analyse-video" ? "on" : "")
+    + '"><i class="p"></i>' + t("analyseV") + '</a>';
   $("#nav-matchs").innerHTML = IDX.matchs.slice().reverse().map(function (m) {
     var u = "#/match/" + m.match_id;
     return '<a href="' + u + '" class="' + (h === u ? "on" : "") + '"><i class="p"></i>'
@@ -1329,6 +1399,76 @@ function charge(url) {
   }).then(function (d) { CACHE[url] = d; return d; });
 }
 
+
+/* ---------------------------------------------------------------- analyse video
+   Tous les nombres viennent de data/analyse_video.json, ecrit par
+   kazma-vision/publie_web_ml.py depuis les sorties du pipeline, la base du
+   fournisseur et les vignettes etiquetees a la main. AUCUN chiffre n'est ecrit
+   ici : une valeur absente du JSON ne s'affiche pas. */
+var ML = null;
+
+function mlFig(cle, titre, legende, source) {
+  if (!ML.figures[cle]) return "";
+  return '<div class="carte"><h2>' + t(titre) + '</h2>'
+    + '<div class="lg">' + t(legende) + (source ? ' · <b class="src-' + source + '">'
+        + t(source === "v" ? "mlVideo" : source === "f" ? "mlFourn" : "mlVerite") + '</b>' : '')
+    + '</div><img class="fig" src="' + ML.figures[cle] + '" alt=""></div>';
+}
+
+function vueAnalyseVideo() {
+  if (!ML) return '<div class="vide"><b>' + t("chargement") + '</b></div>';
+  var h = '<h1>' + t("mlTitre") + '</h1><div class="sub">' + t("mlSous")
+    + ' · ' + esc(ML.match.adversaire) + ' · ' + esc(ML.match.date) + '</div>';
+
+  h += '<div class="kpi">' + ML.kpi.map(function (k) {
+    return '<div><b>' + esc(k.v) + (k.u ? '<i class="u">' + esc(k.u) + '</i>' : '')
+      + '</b><span>' + t(k.k) + '</span></div>';
+  }).join("") + '</div>';
+
+  h += mlFig("occupation", "mlOccup", "mlOccupL", "v");
+  h += mlFig("blocs", "mlBlocs", "mlBlocsL", "v");
+
+  /* le tableau de forme : les quatre grandeurs, les deux equipes */
+  var F = ML.forme, rg = [["mlLong", "longueur"], ["mlLarg", "largeur"],
+                          ["mlLigne", "ligne_def"], ["mlCentre", "centre"]];
+  h += '<div class="carte"><h2>' + t("mlForme") + '</h2><div class="lg">'
+    + t("mlBlocsL") + ' · <b class="src-v">' + t("mlVideo") + '</b></div>'
+    + '<table class="cmp"><tr><th></th><th>' + esc(IDX.equipe || "Kazma")
+    + '</th><th>' + esc(ML.match.adversaire) + '</th></tr>'
+    + rg.map(function (r) {
+        var a = F.kazma[r[1]], b = F.tadamon[r[1]];
+        return '<tr><td class="et">' + t(r[0]) + '</td>'
+          + '<td class="' + (a > b ? "nous" : "") + '">' + nb(a) + ' m</td>'
+          + '<td class="' + (b > a ? "nous" : "") + '">' + nb(b) + ' m</td></tr>';
+      }).join("")
+    + '</table></div>';
+
+  h += mlFig("hauteur", "mlHauteur", "mlHauteurL", "v");
+  h += mlFig("tirs", "mlTirs", "mlTirsL", "f");
+  h += '<div class="duo-fig">' + mlFig("pistes", "mlSuivi", "mlSuiviL", "v")
+    + mlFig("detections", "mlDetect", "mlDetectL", "v") + '</div>';
+  h += '<div class="duo-fig">' + mlFig("calibration", "mlCalibF", "mlCalibL", "v")
+    + mlFig("equipes", "mlEqF", "mlEqL", "e") + '</div>';
+
+  /* les limites, ecrites dans le JSON, avec la duree reelle des pistes */
+  h += '<div class="carte lim"><h2>' + t("mlLimites") + '</h2><ul>'
+    + ML.limites.map(function (k) {
+        return '<li>' + t(k).replace("%PISTE%", nb(ML.suivi.duree_mediane_s, 0)) + '</li>';
+      }).join("")
+    + '</ul><div class="lg src">' + t("mlSources") + ' — '
+    + esc(ML.sources.video) + ' · ' + esc(ML.sources.fournisseur) + ' · '
+    + esc(ML.sources.verite) + '</div></div>';
+  return h;
+}
+
+/* Une decimale TOUJOURS : sans cela 36.0 s'affiche "36" et la colonne perd son
+   alignement, ce qui laisse croire a une precision differente d'une ligne a
+   l'autre. Virgule decimale en francais. */
+function nb(x, d) {
+  var v = Number(x).toFixed(d === undefined ? 1 : d);
+  return LANG === "fr" ? v.replace(".", ",") : v;
+}
+
 function rendre() {
   var v = $("#vue"), h = location.hash || "#/";
   nav();
@@ -1351,6 +1491,13 @@ function rendre() {
       .then(function () { v.innerHTML = vueJoueur(num); window.scrollTo(0, 0); });
   }
   if (h === "#/joueurs") { v.innerHTML = vueJoueurs(); window.scrollTo(0, 0); return; }
+  if (h === "#/analyse-video") {
+    if (ML) { v.innerHTML = vueAnalyseVideo(); window.scrollTo(0, 0); return; }
+    v.innerHTML = '<div class="vide"><b>' + t("chargement") + '</b></div>';
+    return charge("data/analyse_video.json").then(function (d) { ML = d; })
+      .catch(function () {})
+      .then(function () { v.innerHTML = vueAnalyseVideo(); window.scrollTo(0, 0); });
+  }
   v.innerHTML = vueSaison(); window.scrollTo(0, 0);
 }
 

@@ -1,0 +1,104 @@
+{
+ "genere": "2026-09-18",
+ "match": {
+  "id": "2026-08-27_AlTadhamon_Kazma",
+  "date": "2026-08-27",
+  "adversaire": "Al Tadhamon",
+  "video": "captation de l'analyste, 2 × 50 min, 1280 × 720 à 25 img/s"
+ },
+ "sources": {
+  "video": "pipeline kazma-vision : calibration, détection, suivi, équipes, projection en mètres",
+  "fournisseur": "kazma-bdd/kazma.db, relevé du fournisseur pour ce match",
+  "verite": "300 vignettes de joueurs étiquetées à la main"
+ },
+ "kpi": [
+  {
+   "v": "100",
+   "u": "min",
+   "k": "mlCalib"
+  },
+  {
+   "v": "0,73",
+   "u": "m",
+   "k": "mlErreur"
+  },
+  {
+   "v": "8",
+   "u": "",
+   "k": "mlClics"
+  },
+  {
+   "v": "26",
+   "u": "",
+   "k": "mlPersonnes"
+  },
+  {
+   "v": "7 207",
+   "u": "",
+   "k": "mlPistes"
+  },
+  {
+   "v": "95",
+   "u": "%",
+   "k": "mlEquipes"
+  }
+ ],
+ "calibration": {
+  "images_calibrees": 5977,
+  "clics_humains": 8,
+  "erreur_m_mediane": 0.73,
+  "erreur_m_pire": 2.63,
+  "temoin_diffusion_m": [
+   24.2,
+   86.7
+  ]
+ },
+ "detection": {
+  "images": 10001,
+  "ecartees": 0,
+  "personnes_mediane": 26,
+  "personnes_p90": 32,
+  "hauteur_joueur_px": 32
+ },
+ "suivi": {
+  "pistes": 7207,
+  "points": 1143393,
+  "duree_mediane_s": 13.1,
+  "duree_max_s": 1120
+ },
+ "equipes": {
+  "etiquettes": 300,
+  "exactitude": 95,
+  "rappel_kazma": 100,
+  "rappel_tadamon": 94
+ },
+ "forme": {
+  "kazma": {
+   "longueur": 35.2,
+   "largeur": 36.0,
+   "ligne_def": 49.9,
+   "centre": 62.3
+  },
+  "tadamon": {
+   "longueur": 29.9,
+   "largeur": 30.5,
+   "ligne_def": 31.7,
+   "centre": 40.5
+  }
+ },
+ "figures": {
+  "occupation": "ml/occupation.png",
+  "blocs": "ml/blocs.png",
+  "hauteur": "ml/hauteur_bloc.png",
+  "tirs": "ml/tirs.png",
+  "pistes": "ml/pistes.png",
+  "detections": "ml/detections.png",
+  "calibration": "ml/calibration.png",
+  "equipes": "ml/equipes.png"
+ },
+ "limites": [
+  "mlLim1",
+  "mlLim2",
+  "mlLim3"
+ ]
+}
