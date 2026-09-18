@@ -4,101 +4,140 @@
   "id": "2026-08-27_AlTadhamon_Kazma",
   "date": "2026-08-27",
   "adversaire": "Al Tadhamon",
-  "video": "captation de l'analyste, 2 × 50 min, 1280 × 720 à 25 img/s"
+  "score": "3 - 1"
  },
  "sources": {
-  "video": "pipeline kazma-vision : calibration, détection, suivi, équipes, projection en mètres",
-  "fournisseur": "kazma-bdd/kazma.db, relevé du fournisseur pour ce match",
-  "verite": "300 vignettes de joueurs étiquetées à la main"
+  "video": "positions mesurées sur la vidéo du match, image par image",
+  "fournisseur": "relevé du fournisseur de données de la division"
  },
  "kpi": [
   {
-   "v": "100",
-   "u": "min",
-   "k": "mlCalib"
-  },
-  {
-   "v": "0,73",
-   "u": "m",
-   "k": "mlErreur"
-  },
-  {
-   "v": "8",
-   "u": "",
-   "k": "mlClics"
-  },
-  {
-   "v": "26",
-   "u": "",
-   "k": "mlPersonnes"
-  },
-  {
-   "v": "7 207",
-   "u": "",
-   "k": "mlPistes"
-  },
-  {
-   "v": "95",
+   "v": "70",
    "u": "%",
-   "k": "mlEquipes"
+   "k": "kPoss"
+  },
+  {
+   "v": "20",
+   "u": "",
+   "k": "kTirs"
+  },
+  {
+   "v": "89",
+   "u": "%",
+   "k": "kPasses"
+  },
+  {
+   "v": "18",
+   "u": "",
+   "k": "kRecup"
+  },
+  {
+   "v": "49,9",
+   "u": "m",
+   "k": "kLigne"
+  },
+  {
+   "v": "36,0",
+   "u": "m",
+   "k": "kLarge"
   }
  ],
- "calibration": {
-  "images_calibrees": 5977,
-  "clics_humains": 8,
-  "erreur_m_mediane": 0.73,
-  "erreur_m_pire": 2.63,
-  "temoin_diffusion_m": [
-   24.2,
-   86.7
-  ]
- },
- "detection": {
-  "images": 10001,
-  "ecartees": 0,
-  "personnes_mediane": 26,
-  "personnes_p90": 32,
-  "hauteur_joueur_px": 32
- },
- "suivi": {
-  "pistes": 7207,
-  "points": 1143393,
-  "duree_mediane_s": 13.1,
-  "duree_max_s": 1120
- },
- "equipes": {
-  "etiquettes": 300,
-  "exactitude": 95,
-  "rappel_kazma": 100,
-  "rappel_tadamon": 94
- },
- "forme": {
-  "kazma": {
-   "longueur": 35.2,
-   "largeur": 36.0,
-   "ligne_def": 49.9,
-   "centre": 62.3
+ "comparaison": [
+  {
+   "k": "kPoss",
+   "a": 70,
+   "b": 30,
+   "u": " %"
   },
-  "tadamon": {
-   "longueur": 29.9,
-   "largeur": 30.5,
-   "ligne_def": 31.7,
-   "centre": 40.5
+  {
+   "k": "cPasses",
+   "a": 692,
+   "b": 346,
+   "u": ""
+  },
+  {
+   "k": "kPasses",
+   "a": 89,
+   "b": 82,
+   "u": " %"
+  },
+  {
+   "k": "cProgE",
+   "a": 101,
+   "b": 40,
+   "u": ""
+  },
+  {
+   "k": "kTirs",
+   "a": 20,
+   "b": 3,
+   "u": ""
+  },
+  {
+   "k": "cCadres",
+   "a": 11,
+   "b": 1,
+   "u": ""
+  },
+  {
+   "k": "cDuels",
+   "a": 56,
+   "b": 40,
+   "u": ""
+  },
+  {
+   "k": "kRecup",
+   "a": 18,
+   "b": 3,
+   "u": ""
+  },
+  {
+   "k": "cPertes",
+   "a": 57,
+   "b": 66,
+   "u": "",
+   "bas": true
   }
- },
+ ],
+ "forme": [
+  {
+   "k": "mlLong",
+   "a": 35.2,
+   "b": 29.9,
+   "dec": 1
+  },
+  {
+   "k": "mlLarg",
+   "a": 36.0,
+   "b": 30.5,
+   "dec": 1
+  },
+  {
+   "k": "mlLigne",
+   "a": 49.9,
+   "b": 31.7,
+   "dec": 1
+  },
+  {
+   "k": "mlCentre",
+   "a": 62.3,
+   "b": 40.5,
+   "dec": 1
+  }
+ ],
  "figures": {
   "occupation": "ml/occupation.png",
   "blocs": "ml/blocs.png",
   "hauteur": "ml/hauteur_bloc.png",
+  "phases": "ml/phases_bloc.png",
+  "ballon": "ml/ballon.png",
   "tirs": "ml/tirs.png",
-  "pistes": "ml/pistes.png",
-  "detections": "ml/detections.png",
-  "calibration": "ml/calibration.png",
-  "equipes": "ml/equipes.png"
+  "passes": "ml/passes.png",
+  "largeur": "ml/largeur_bloc.png"
  },
- "limites": [
-  "mlLim1",
-  "mlLim2",
-  "mlLim3"
+ "lire": [
+  "kLire1",
+  "kLire2",
+  "kLire3"
  ]
 }
