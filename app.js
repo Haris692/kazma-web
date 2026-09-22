@@ -25,6 +25,7 @@ var T = {
   amCentre: { fr: "Centre de gravité",  en: "Centre of gravity", ar: "مركز الثقل" },
   amVus:    { fr: "Joueurs vus par image", en: "Players seen per frame",
               ar: "لاعبون مرئيون لكل صورة" },
+  amBadge:  { fr: "vidéo", en: "video", ar: "فيديو" },
   amMT1:    { fr: "1re mi-temps", en: "First half",  ar: "الشوط الأول" },
   amMT2:    { fr: "2e mi-temps",  en: "Second half", ar: "الشوط الثاني" },
   amImages: { fr: "images mesurées", en: "frames measured", ar: "صور مقاسة" },
@@ -202,6 +203,12 @@ var T = {
   joueur:     { fr: "Joueur",              en: "Player",             ar: "اللاعب" },
   dom:        { fr: "dom",                 en: "home",               ar: "أرضه" },
   ext:        { fr: "ext",                 en: "away",               ar: "خارجه" },
+  lieu:       { fr: "Lieu",                en: "Venue",              ar: "الملعب" },
+  match1:     { fr: "match",               en: "match",              ar: "مباراة" },
+  score:      { fr: "Score",               en: "Score",              ar: "النتيجة" },
+  mOuvrir:    { fr: "Cliquez une ligne pour ouvrir le rapport du match",
+                en: "Click a row to open the match report",
+                ar: "انقر على صف لفتح تقرير المباراة" },
   chargement: { fr: "Chargement…",         en: "Loading…",           ar: "جارٍ التحميل…" },
   introuvable:{ fr: "Match introuvable",   en: "Match not found",    ar: "المباراة غير موجودة" },
   aucune:     { fr: "Aucune donnée",       en: "No data",            ar: "لا توجد بيانات" },
@@ -555,46 +562,20 @@ function nav() {
   document.documentElement.lang = LANG;
   document.documentElement.dir = LANG === "ar" ? "rtl" : "ltr";
   $("#t-equipe").textContent = t("equipe");
-  $("#t-matchs").textContent = t("matchs");
   $("#t-joueurs").textContent = t("joueurs");
   $("#t-titre").textContent = t("titre");
+  /* UNE SEULE ENTREE POUR LES MATCHS, et la liste vit sur sa page. La barre
+     laterale les portait tous, un par un : a trois matchs c'est confortable,
+     a trente c'est une colonne qui defile sans fin. Le site fait deja ce
+     choix pour les joueurs -- la barre en montre dix, « Tous les joueurs »
+     mene au reste. */
   $("#nav-equipe").innerHTML =
     '<a href="#/" class="' + (h === "#/" ? "on" : "") + '"><i class="p"></i>' + t("ensemble") + '</a>'
     + '<a href="#/joueurs" class="' + (h === "#/joueurs" ? "on" : "") + '"><i class="p"></i>' + t("tousJ") + '</a>'
     + '<a href="#/analyse-video" class="' + (h === "#/analyse-video" ? "on" : "")
-    + '"><i class="p"></i>' + t("analyseV") + '</a>';
-  /* Les matchs sont groupes par competition. L'ordre des groupes est fixe --
-     championnat, coupe, amicaux, autres -- et non celui ou ils apparaissent :
-     sinon le menu se reordonne tout seul quand un amical arrive avant un match
-     de championnat. Un groupe vide ne s'affiche pas. */
-  var ORDRE_C = ["championnat", "coupe", "amical"];
-  var CLE_C = { championnat: "cChampionnat", coupe: "cCoupe", amical: "cAmical" };
-  var parC = {};
-  IDX.matchs.slice().reverse().forEach(function (m) {
-    var c = m.competition || "championnat";
-    (parC[c] = parC[c] || []).push({ u: "#/match/" + m.match_id, nom: m.adversaire });
-  });
-  /* Les matchs amicaux viennent d'une AUTRE source et portent donc une autre
-     route. Personne ne releve les amicaux : ils n'ont pas d'export
-     fournisseur, n'entrent jamais dans kazma.db, et n'apparaissent donc pas
-     dans index.json. Ils sont mesures sur la video et publies a part, par
-     kazma-vision/publie_web_amical.py. Leur absence ne casse rien : le groupe
-     ne s'affiche simplement pas. */
-  if (AMIS && AMIS.matchs) AMIS.matchs.slice().reverse().forEach(function (m) {
-    var c = m.competition || "amical";
-    (parC[c] = parC[c] || []).push({ u: "#/amical/" + m.id, nom: m.adversaire });
-  });
-  var groupes = ORDRE_C.filter(function (c) { return parC[c]; })
-    .concat(Object.keys(parC).filter(function (c) { return ORDRE_C.indexOf(c) < 0; }));
-  $("#nav-matchs").innerHTML = groupes.map(function (c) {
-    /* Le sous-titre s'affiche meme s'il n'y a qu'un groupe : c'est lui qui dit
-       au lecteur de quelle competition sont les matchs au-dessous. */
-    var titre = '<div class="sgrp">' + t(CLE_C[c] || "cAutre") + '</div>';
-    return titre + parC[c].map(function (m) {
-      return '<a href="' + m.u + '" class="' + (h === m.u ? "on" : "") + '"><i class="p"></i>'
-        + esc(m.nom) + '</a>';
-    }).join("");
-  }).join("");
+    + '"><i class="p"></i>' + t("analyseV") + '</a>'
+    + '<a href="#/matchs" class="' + (/^#\/(matchs|match\/|amical\/)/.test(h) ? "on" : "")
+    + '"><i class="p"></i>' + t("matchs") + '</a>';
   $("#nav-joueurs").innerHTML = IDX.joueurs.slice(0, 10).map(function (j) {
     var u = "#/joueur/" + j.numero;
     return '<a href="' + u + '" class="' + (h === u ? "on" : "") + '"><i class="p"></i>'
@@ -808,6 +789,11 @@ document.addEventListener("click", function (ev) {
   if (h) { triCol(h.getAttribute("data-tab"), h.getAttribute("data-tri")); return; }
   var r = ev.target.closest && ev.target.closest("tr[data-joueur]");
   if (r) { location.hash = "#/joueur/" + r.getAttribute("data-joueur"); return; }
+  /* `data-aller` porte la route ENTIERE, pas seulement l'identifiant : sur la
+     page Matchs les deux sources cohabitent et ne mènent pas au meme endroit
+     (#/match/... pour le championnat, #/amical/... pour la video). */
+  var a = ev.target.closest && ev.target.closest("tr[data-aller]");
+  if (a) { location.hash = a.getAttribute("data-aller"); return; }
   var q = ev.target.closest && ev.target.closest("tr[data-match]");
   if (q) location.hash = "#/match/" + q.getAttribute("data-match");
 });
@@ -824,6 +810,88 @@ function vueJoueurs() {
     + t("cumul") + '</div></div></div>'
     + '<div class="carte">' + tableauJoueurs(IDX.joueurs, 'tous') + '</div>';
 }
+
+/* ----------------------------------------------------------- page Matchs */
+/* DEUX SOURCES, UNE SEULE LISTE. Le championnat vient du fournisseur, par
+   index.json ; les amicaux n'ont pas d'export fournisseur et viennent de la
+   mesure video, par matchs_video.json. Ils portent donc des routes
+   differentes, et c'est la seule chose qui les distingue ici.
+
+   L'ordre des groupes est FIXE -- championnat, coupe, amicaux, autres -- et
+   non celui ou ils arrivent : sinon la page se reordonne toute seule le jour
+   ou un amical se joue avant un match de championnat. Un groupe vide ne
+   s'affiche pas. */
+function groupesMatchs() {
+  var ORDRE = ["championnat", "coupe", "amical"];
+  var par = {};
+  IDX.matchs.slice().reverse().forEach(function (m) {
+    var c = m.competition || "championnat";
+    (par[c] = par[c] || []).push({
+      id: m.match_id, route: "match", date: m.date, adversaire: m.adversaire,
+      domicile: m.domicile, score: m.score
+    });
+  });
+  if (AMIS && AMIS.matchs) AMIS.matchs.slice().reverse().forEach(function (m) {
+    var c = m.competition || "amical";
+    (par[c] = par[c] || []).push({
+      id: m.id, route: "amical", date: m.date, adversaire: m.adversaire,
+      domicile: m.domicile, score: m.score
+    });
+  });
+  return { par: par, ordre: ORDRE.filter(function (c) { return par[c]; })
+    .concat(Object.keys(par).filter(function (c) { return ORDRE.indexOf(c) < 0; })) };
+}
+
+/* Le score est affiche dans son ordre REEL (recevant - visiteur), le meme que
+   sur la page du match : "Al Shabab 2 - 3 Kazma". Le remettre du point de vue
+   de Kazma se lirait mieux ici mais contredirait la page d'a cote, et c'est la
+   colonne Lieu qui leve l'ambiguite. La couleur, elle, juge Kazma -- comme
+   partout dans l'appli. */
+function ligneMatch(m) {
+  var cell;
+  if (!m.score) {
+    cell = '<td><span class="src-v">' + t("amBadge") + '</span></td>';
+  } else {
+    var nous = m.domicile ? m.score[0] : m.score[1];
+    var eux = m.domicile ? m.score[1] : m.score[0];
+    var c = nous > eux ? "sup" : (nous < eux ? "inf" : "neutre");
+    cell = '<td class="v ' + c + '">' + m.score[0] + ' – ' + m.score[1] + '</td>';
+  }
+  /* LE LIEU N'EST PAS DEDUIT D'UN CHAMP ABSENT. `domicile` vient du
+     fournisseur ; un amical mesure sur la video ne l'a pas. Tester
+     `m.domicile ? ... : ...` ecrirait "exterieur" pour tout match dont on
+     ignore le lieu -- une information inventee, et parfaitement credible. */
+  var lieu = typeof m.domicile === "boolean" ? t(m.domicile ? "dom" : "ext") : "—";
+  return '<tr data-aller="#/' + m.route + '/' + m.id + '">'
+    + '<td class="g nu">' + dateFr(m.date) + '</td>'
+    + '<td class="g nom">' + esc(m.adversaire) + '</td>'
+    + '<td class="g">' + lieu + '</td>'
+    + cell + '</tr>';
+}
+
+/* « 1 matchs » se lit comme une faute de frappe et fait douter du reste de la
+   page. Deux formes suffisent dans les trois langues pour ce qu'on affiche. */
+function nMatchs(n) {
+  return n + " " + t(n > 1 ? "matchs" : "match1").toLowerCase();
+}
+
+function vueMatchs() {
+  var g = groupesMatchs();
+  var total = g.ordre.reduce(function (n, c) { return n + g.par[c].length; }, 0);
+  var h = '<div class="entete"><div><h1>' + t("matchs") + '</h1><div class="sous">'
+    + nMatchs(total) + '</div></div></div>';
+  return h + g.ordre.map(function (c) {
+    return '<div class="carte"><h2>' + t(CLE_COMPET[c] || "cAutre") + '</h2>'
+      + '<div class="lg">' + nMatchs(g.par[c].length)
+      + ' · ' + t("mOuvrir") + '</div>'
+      + '<div class="tw"><table><thead><tr><th class="g">' + t("date") + '</th>'
+      + '<th class="g">' + t("adv") + '</th><th class="g">' + t("lieu") + '</th>'
+      + '<th>' + t("score") + '</th></tr></thead><tbody>'
+      + g.par[c].map(ligneMatch).join("") + '</tbody></table></div></div>';
+  }).join("");
+}
+
+var CLE_COMPET = { championnat: "cChampionnat", coupe: "cCoupe", amical: "cAmical" };
 
 /* ------------------------------------------------------- les couloirs
    Trois bandes, trois lignes : part des actions, part des passes progressives,
@@ -1516,7 +1584,12 @@ function amTable(M, mt) {
   return '<div class="carte"><h2>' + t("amCompar") + ' · '
     + t(mt.k) + '</h2><div class="lg">' + t("amComparL") + ' · <b class="src-v">'
     + t("mlVideo") + '</b> · ' + mt.images + ' ' + t("amImages")
-    + '</div><table class="cmp"><tr><th></th><th>' + esc(IDX.equipe || "Kazma")
+    /* PAS DE CLASSE `cmp` ICI : malgre son nom, `.cmp` est la GRILLE des
+       barres opposees (display:grid, 5 colonnes), pas un style de tableau.
+       Posee sur un <table> elle en casse la mise en page -- le tableau sort
+       tasse contre le bord gauche de la carte. Le style `table` par defaut du
+       site fait deja ce qu'il faut. */
+    + '</div><table><tr><th></th><th>' + esc(IDX.equipe || "Kazma")
     + '</th><th>' + esc(M.adversaire) + '</th></tr>'
     /* L'unite vient du JSON, jamais d'un test sur le nom de la colonne : une
        mesure ajoutee un jour dans une autre unite sortirait en metres sans
@@ -1543,7 +1616,7 @@ function vueAmical(id) {
   /* Le verdict est CALCULE par le publieur, jamais ecrit ici : une phrase en
      dur devient fausse des que les donnees changent, et c'est arrive sur ce
      match meme -- la largeur change de signe d'une mi-temps a l'autre. */
-  h += '<div class="carte"><h2>' + t("amVerdict") + '</h2><table class="cmp"><tr><th></th><th>'
+  h += '<div class="carte"><h2>' + t("amVerdict") + '</h2><table><tr><th></th><th>'
     + t("amMT1") + '</th><th>' + t("amMT2") + '</th><th>' + t("amFixe") + '</th></tr>'
     /* PAS DE VERT ICI. Dans toute l'appli, le vert dit "Kazma fait mieux".
        Un bloc plus profond n'est ni meilleur ni pire, et "l'ecart tient sur
@@ -1656,6 +1729,7 @@ function rendre() {
       .then(function () { v.innerHTML = vueJoueur(num); window.scrollTo(0, 0); });
   }
   if (h === "#/joueurs") { v.innerHTML = vueJoueurs(); window.scrollTo(0, 0); return; }
+  if (h === "#/matchs") { v.innerHTML = vueMatchs(); window.scrollTo(0, 0); return; }
   if (h === "#/analyse-video") {
     if (ML) { v.innerHTML = vueAnalyseVideo(); window.scrollTo(0, 0); return; }
     v.innerHTML = '<div class="vide"><b>' + t("chargement") + '</b></div>';
