@@ -16,6 +16,57 @@ var T = {
   cCoupe:       { fr: "Coupe",             en: "Cup",                ar: "الكأس" },
   cAmical:      { fr: "Matchs amicaux",    en: "Friendlies",         ar: "مباريات ودية" },
   cAutre:       { fr: "Autres",            en: "Other",              ar: "أخرى" },
+  /* --- matchs amicaux : mesures video, aucun releve fournisseur --- */
+  amTitre:  { fr: "Match amical",  en: "Friendly match", ar: "مباراة ودية" },
+  amSous:   { fr: "Positions mesurées sur la vidéo — ce match n'a pas de relevé du fournisseur",
+              en: "Positions measured from video — no provider data for this match",
+              ar: "مواقع مقاسة من الفيديو — لا توجد بيانات مزود لهذه المباراة" },
+  amProf:   { fr: "Profondeur du bloc", en: "Block depth", ar: "عمق الكتلة" },
+  amCentre: { fr: "Centre de gravité",  en: "Centre of gravity", ar: "مركز الثقل" },
+  amVus:    { fr: "Joueurs vus par image", en: "Players seen per frame",
+              ar: "لاعبون مرئيون لكل صورة" },
+  amMT1:    { fr: "1re mi-temps", en: "First half",  ar: "الشوط الأول" },
+  amMT2:    { fr: "2e mi-temps",  en: "Second half", ar: "الشوط الثاني" },
+  amImages: { fr: "images mesurées", en: "frames measured", ar: "صور مقاسة" },
+  amOccup:  { fr: "Où les équipes se tiennent", en: "Where the teams stand",
+              ar: "أين يتمركز الفريقان" },
+  amOccupL: { fr: "Les deux mi-temps réunies, chaque équipe ramenée à attaquer vers la droite",
+              en: "Both halves combined, each team turned to attack rightwards",
+              ar: "الشوطان معًا، كل فريق موجَّه للهجوم نحو اليمين" },
+  amBlocs:  { fr: "L'emprise des deux blocs", en: "The footprint of both blocks",
+              ar: "مساحة الكتلتين" },
+  amBlocsL: { fr: "Profondeur × largeur médianes, chaque équipe dans son sens d'attaque",
+              en: "Median depth × width, each team in its own attacking direction",
+              ar: "الوسيط للعمق × العرض، كل فريق في اتجاه هجومه" },
+  amCompar: { fr: "Les deux blocs en chiffres", en: "Both blocks in numbers",
+              ar: "الكتلتان بالأرقام" },
+  amComparL:{ fr: "Mesuré seulement sur les images où LES DEUX équipes sont vues à 8 joueurs ou plus",
+              en: "Measured only on frames where BOTH teams have 8 or more players visible",
+              ar: "يُقاس فقط على الصور التي يظهر فيها 8 لاعبين أو أكثر من كلا الفريقين" },
+  amVerdict:{ fr: "Ce qui tient sur les deux mi-temps",
+              en: "What holds across both halves", ar: "ما يثبت في الشوطين" },
+  amVProf:  { fr: "Profondeur", en: "Depth", ar: "العمق" },
+  amVLarg:  { fr: "Largeur",    en: "Width", ar: "العرض" },
+  amTient:  { fr: "même signe aux deux mi-temps", en: "same sign in both halves",
+              ar: "الإشارة نفسها في الشوطين" },
+  amChange: { fr: "change de signe entre les mi-temps — pas un trait de jeu",
+              en: "changes sign between halves — not a trait of play",
+              ar: "تتغير الإشارة بين الشوطين — ليست سمة لعب" },
+  amFixe:   { fr: "à effectif fixe", en: "at fixed squad size", ar: "بعدد لاعبين ثابت" },
+  amLimites:{ fr: "Ce que cette mesure ne dit pas", en: "What this measurement does not say",
+              ar: "ما لا تقوله هذه القياسات" },
+  amL1:     { fr: "Aucune donnée de ballon : ni possession, ni passes, ni tirs. Sur ce match l'adversaire joue en blanc, et le détecteur confond le ballon et les maillots.",
+              en: "No ball data: no possession, passes or shots. The opponent wears white here, and the detector confuses the ball with the shirts.",
+              ar: "لا توجد بيانات كرة: لا استحواذ ولا تمريرات ولا تسديدات. الخصم يلعب بالأبيض، والكاشف يخلط بين الكرة والقمصان." },
+  amL2:     { fr: "Aucun joueur n'est nommé : un numéro de maillot fait 4 à 5 pixels sur cette vidéo.",
+              en: "No player is named: a shirt number is 4 to 5 pixels on this video.",
+              ar: "لا يُسمّى أي لاعب: رقم القميص يبلغ 4 إلى 5 بكسل في هذا الفيديو." },
+  amL3:     { fr: "Le bord arrière du bloc n'est pas la ligne défensive : la caméra suit le ballon, le gardien et le dernier défenseur sortent souvent du cadre.",
+              en: "The rear edge of the block is not the defensive line: the camera follows the ball, so the keeper and last defender are often out of frame.",
+              ar: "الحافة الخلفية للكتلة ليست خط الدفاع: الكاميرا تتبع الكرة، فيخرج الحارس وآخر مدافع من الإطار غالبًا." },
+  amL4:     { fr: "La seconde mi-temps projette plus de positions vers les bords du terrain que la première : ses mesures au mètre près sont moins sûres.",
+              en: "The second half projects more positions towards the edges of the pitch than the first: its metre-level readings are less reliable.",
+              ar: "الشوط الثاني يسقط مواقع أكثر نحو أطراف الملعب مقارنة بالأول: قياساته بالمتر أقل موثوقية." },
   analyseV:   { fr: "Analyse vidéo",        en: "Video analysis",     ar: "التحليل بالفيديو" },
   mlTitre:    { fr: "Analyse du match",     en: "Match analysis",     ar: "تحليل المباراة" },
   mlSous:     { fr: "Position de chaque joueur mesurée sur la vidéo, et relevé du fournisseur",
@@ -521,7 +572,17 @@ function nav() {
   var parC = {};
   IDX.matchs.slice().reverse().forEach(function (m) {
     var c = m.competition || "championnat";
-    (parC[c] = parC[c] || []).push(m);
+    (parC[c] = parC[c] || []).push({ u: "#/match/" + m.match_id, nom: m.adversaire });
+  });
+  /* Les matchs amicaux viennent d'une AUTRE source et portent donc une autre
+     route. Personne ne releve les amicaux : ils n'ont pas d'export
+     fournisseur, n'entrent jamais dans kazma.db, et n'apparaissent donc pas
+     dans index.json. Ils sont mesures sur la video et publies a part, par
+     kazma-vision/publie_web_amical.py. Leur absence ne casse rien : le groupe
+     ne s'affiche simplement pas. */
+  if (AMIS && AMIS.matchs) AMIS.matchs.slice().reverse().forEach(function (m) {
+    var c = m.competition || "amical";
+    (parC[c] = parC[c] || []).push({ u: "#/amical/" + m.id, nom: m.adversaire });
   });
   var groupes = ORDRE_C.filter(function (c) { return parC[c]; })
     .concat(Object.keys(parC).filter(function (c) { return ORDRE_C.indexOf(c) < 0; }));
@@ -530,9 +591,8 @@ function nav() {
        au lecteur de quelle competition sont les matchs au-dessous. */
     var titre = '<div class="sgrp">' + t(CLE_C[c] || "cAutre") + '</div>';
     return titre + parC[c].map(function (m) {
-      var u = "#/match/" + m.match_id;
-      return '<a href="' + u + '" class="' + (h === u ? "on" : "") + '"><i class="p"></i>'
-        + esc(m.adversaire) + '</a>';
+      return '<a href="' + m.u + '" class="' + (h === m.u ? "on" : "") + '"><i class="p"></i>'
+        + esc(m.nom) + '</a>';
     }).join("");
   }).join("");
   $("#nav-joueurs").innerHTML = IDX.joueurs.slice(0, 10).map(function (j) {
@@ -1445,7 +1505,72 @@ function charge(url) {
    La page s'adresse a un entraineur : elle ne dit rien du modele, de ses
    erreurs ni de ses reglages -- ce sont des chiffres d'ingenieur, ils n'ont
    rien a apprendre d'un match. */
-var ML = null;
+var ML = null, AMIS = null;
+
+/* ------------------------------------------------- matchs amicaux (video) */
+/* Un tableau par mi-temps. AUCUNE COULEUR DE JUGEMENT ici, contrairement aux
+   tableaux du championnat : un bloc plus profond n'est ni meilleur ni pire
+   qu'un bloc plus court, et le vert/rouge de l'appli ne sert qu'a dire si
+   Kazma fait MIEUX. Sans `sens`, colorer reviendrait a inventer un jugement. */
+function amTable(M, mt) {
+  return '<div class="carte"><h2>' + t("amCompar") + ' · '
+    + t(mt.k) + '</h2><div class="lg">' + t("amComparL") + ' · <b class="src-v">'
+    + t("mlVideo") + '</b> · ' + mt.images + ' ' + t("amImages")
+    + '</div><table class="cmp"><tr><th></th><th>' + esc(IDX.equipe || "Kazma")
+    + '</th><th>' + esc(M.adversaire) + '</th></tr>'
+    /* L'unite vient du JSON, jamais d'un test sur le nom de la colonne : une
+       mesure ajoutee un jour dans une autre unite sortirait en metres sans
+       que rien ne proteste. */
+    + M.lignes.map(function (r) {
+        return '<tr><td class="et">' + t(r.k) + '</td><td>' + nb(mt.kazma[r.c], 1) + r.u
+          + '</td><td>' + nb(mt.adverse[r.c], 1) + r.u + '</td></tr>';
+      }).join("") + '</table></div>';
+}
+
+function vueAmical(id) {
+  var M = null;
+  if (AMIS && AMIS.matchs) AMIS.matchs.forEach(function (x) { if (x.id === id) M = x; });
+  if (!M) return '<div class="vide"><b>' + t("introuvable") + '</b></div>';
+
+  var h = '<h1>' + t("amTitre") + ' · ' + esc(M.adversaire) + '</h1><div class="sub">'
+    + t("amSous") + ' · ' + esc(M.date) + '</div>';
+
+  h += '<div class="kpi">' + M.kpi.map(function (k) {
+    return '<div><b>' + nb(k.v, k.dec) + (k.u ? '<i class="u">' + esc(k.u) + '</i>' : '')
+      + '</b><span>' + t(k.k) + '</span></div>';
+  }).join("") + '</div>';
+
+  /* Le verdict est CALCULE par le publieur, jamais ecrit ici : une phrase en
+     dur devient fausse des que les donnees changent, et c'est arrive sur ce
+     match meme -- la largeur change de signe d'une mi-temps a l'autre. */
+  h += '<div class="carte"><h2>' + t("amVerdict") + '</h2><table class="cmp"><tr><th></th><th>'
+    + t("amMT1") + '</th><th>' + t("amMT2") + '</th><th>' + t("amFixe") + '</th></tr>'
+    /* PAS DE VERT ICI. Dans toute l'appli, le vert dit "Kazma fait mieux".
+       Un bloc plus profond n'est ni meilleur ni pire, et "l'ecart tient sur
+       les deux mi-temps" n'est pas un jugement de performance : colorer
+       melangerait les deux sens. La ligne d'explication suffit. */
+    + M.verdicts.map(function (v) {
+        return '<tr><td class="et">' + t(v.k) + '</td>'
+          + '<td>' + nb(v.mt1, 1) + ' m</td>'
+          + '<td>' + nb(v.mt2, 1) + ' m</td>'
+          + '<td>' + nb(v.fixe[0], 1) + ' / ' + nb(v.fixe[1], 1) + ' m</td></tr>'
+          + '<tr><td class="et"></td><td colspan="3" class="lg">'
+          + t(v.tient ? "amTient" : "amChange") + '</td></tr>';
+      }).join("") + '</table></div>';
+
+  h += M.figures.map(function (f) {
+    return '<div class="carte"><h2>' + t(f.k) + '</h2><div class="lg">' + t(f.l)
+      + ' · <b class="src-v">' + t("mlVideo") + '</b></div>'
+      + '<img class="fig" src="' + esc(f.src) + '" alt=""></div>';
+  }).join("");
+
+  h += M.mitemps.map(function (mt) { return amTable(M, mt); }).join("");
+
+  h += '<div class="carte lim"><h2>' + t("amLimites") + '</h2><ul>'
+    + M.lire.map(function (k) { return '<li>' + t(k) + '</li>'; }).join("")
+    + '</ul></div>';
+  return h;
+}
 
 function mlFig(cle, titre, legende, source) {
   if (!ML.figures[cle]) return "";
@@ -1515,6 +1640,12 @@ function rendre() {
       v.innerHTML = '<div class="vide"><b>' + t("introuvable") + '</b></div>';
     });
   }
+  var a = h.match(/^#\/amical\/(.+)$/);
+  if (a) {
+    /* Les amicaux tiennent dans un seul fichier, deja charge au demarrage :
+       il n'y a rien a aller chercher ici. */
+    v.innerHTML = vueAmical(a[1]); window.scrollTo(0, 0); return;
+  }
   var p = h.match(/^#\/joueur\/(\d+)$/);
   if (p) {
     var num = parseInt(p[1], 10);
@@ -1548,7 +1679,17 @@ document.addEventListener("click", function (e) {
 });
 window.addEventListener("hashchange", rendre);
 
-charge("data/index.json").then(function (d) { IDX = d; rendre(); })
+/* Les amicaux sont charges au demarrage, avec l'index : la barre laterale doit
+   pouvoir les lister des le premier rendu. Leur absence n'est PAS une erreur --
+   tant que `publie_web_amical.py` n'a pas tourne, le groupe ne s'affiche pas,
+   et le reste du site fonctionne exactement comme avant. */
+charge("data/index.json").then(function (d) { IDX = d; })
+  .then(function () {
+    return charge("data/matchs_video.json")
+      .then(function (d) { AMIS = d; })
+      .catch(function () { AMIS = null; });
+  })
+  .then(function () { rendre(); })
   .catch(function () {
     $("#vue").innerHTML = '<div class="vide"><b>Aucune donnée</b>'
       + 'Lancez <code>python publie.py</code> depuis kazma-bdd.</div>';

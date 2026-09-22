@@ -1,0 +1,149 @@
+{
+ "genere": "2026-09-22",
+ "matchs": [
+  {
+   "id": "2026-09-17_Kazma_AlTadhamon",
+   "date": "2026-09-17",
+   "adversaire": "Al Tadhamon",
+   "competition": "amical",
+   "source": "video",
+   "images": 6031,
+   "kpi": [
+    {
+     "k": "amProf",
+     "v": 24.7,
+     "u": "m",
+     "dec": 1
+    },
+    {
+     "k": "kLarge",
+     "v": 30.6,
+     "u": "m",
+     "dec": 1
+    },
+    {
+     "k": "amCentre",
+     "v": 42.3,
+     "u": "m",
+     "dec": 1
+    },
+    {
+     "k": "amVus",
+     "v": 9.7,
+     "u": "/11",
+     "dec": 1
+    }
+   ],
+   "mitemps": [
+    {
+     "k": "amMT1",
+     "images": 3289,
+     "kazma": {
+      "profondeur": 24.7,
+      "largeur": 30.6,
+      "centre": 42.3,
+      "profondeur8": 19.8,
+      "largeur8": 22.8,
+      "vus": 9.7
+     },
+     "adverse": {
+      "profondeur": 22.5,
+      "largeur": 31.0,
+      "centre": 69.3,
+      "profondeur8": 18.1,
+      "largeur8": 22.2,
+      "vus": 10.1
+     }
+    },
+    {
+     "k": "amMT2",
+     "images": 2742,
+     "kazma": {
+      "profondeur": 23.3,
+      "largeur": 33.2,
+      "centre": 46.5,
+      "profondeur8": 18.8,
+      "largeur8": 23.4,
+      "vus": 10.0
+     },
+     "adverse": {
+      "profondeur": 21.9,
+      "largeur": 29.9,
+      "centre": 63.3,
+      "profondeur8": 17.3,
+      "largeur8": 22.4,
+      "vus": 10.0
+     }
+    }
+   ],
+   "lignes": [
+    {
+     "k": "amProf",
+     "c": "profondeur",
+     "u": " m"
+    },
+    {
+     "k": "kLarge",
+     "c": "largeur",
+     "u": " m"
+    },
+    {
+     "k": "amCentre",
+     "c": "centre",
+     "u": " m"
+    },
+    {
+     "k": "amVus",
+     "c": "vus",
+     "u": " / 11"
+    }
+   ],
+   "verdicts": [
+    {
+     "k": "amVProf",
+     "mt1": 2.2,
+     "mt2": 1.4,
+     "fixe": [
+      1.7,
+      1.5
+     ],
+     "tient": true
+    },
+    {
+     "k": "amVLarg",
+     "mt1": -0.4,
+     "mt2": 3.3,
+     "fixe": [
+      0.6,
+      1.0
+     ],
+     "tient": false
+    }
+   ],
+   "figures": [
+    {
+     "src": "ml/amical_2026-09-17_occupation.png",
+     "k": "amOccup",
+     "l": "amOccupL"
+    },
+    {
+     "src": "ml/amical_2026-09-17_blocs.png",
+     "k": "amBlocs",
+     "l": "amBlocsL"
+    }
+   ],
+   "qualite": {
+    "coins": {
+     "mt1": 0.15,
+     "mt2": 2.42
+    }
+   },
+   "lire": [
+    "amL1",
+    "amL2",
+    "amL3",
+    "amL4"
+   ]
+  }
+ ]
+}
