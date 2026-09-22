@@ -572,8 +572,10 @@ function nav() {
   $("#nav-equipe").innerHTML =
     '<a href="#/" class="' + (h === "#/" ? "on" : "") + '"><i class="p"></i>' + t("ensemble") + '</a>'
     + '<a href="#/joueurs" class="' + (h === "#/joueurs" ? "on" : "") + '"><i class="p"></i>' + t("tousJ") + '</a>'
-    + '<a href="#/analyse-video" class="' + (h === "#/analyse-video" ? "on" : "")
-    + '"><i class="p"></i>' + t("analyseV") + '</a>'
+    /* « Analyse video » a ete retiree du menu le 22/09, a la demande de Haris.
+       LA ROUTE `#/analyse-video` EST INTACTE, ainsi que data/analyse_video.json
+       et les huit figures de ml/ : la page reste ouvrable par son adresse, et
+       la remettre au menu tient en une ligne ici. Rien n'a ete supprime. */
     + '<a href="#/matchs" class="' + (/^#\/(matchs|match\/|amical\/)/.test(h) ? "on" : "")
     + '"><i class="p"></i>' + t("matchs") + '</a>';
   $("#nav-joueurs").innerHTML = IDX.joueurs.slice(0, 10).map(function (j) {
